@@ -112,6 +112,10 @@
                         <label>Description Vie Asso</label>
                         <textarea id="cms-asso-desc" rows="3"></textarea>
                     </div>
+                    <div class="cms-field">
+                        <label>Citation inspirante</label>
+                        <textarea id="cms-asso-quote" rows="2"></textarea>
+                    </div>
                 </form>
             </div>
 
@@ -256,6 +260,7 @@
             document.getElementById('cms-asso-title').value = cmsData['asso-title'] || 'Une association <span class="text-accent">par et pour</span> les habitants';
             document.getElementById('cms-asso-lead').value = cmsData['asso-lead'] || 'Chaque jour, de nouveaux membres nous rejoignent pour donner vie au quartier Falguière.';
             document.getElementById('cms-asso-desc').value = cmsData['asso-desc'] || 'Notre force réside dans la diversité et l\'engagement de nos bénévoles. Que vous ayez quelques heures par mois ou plusieurs jours par semaine à consacrer, chaque aide compte. Ensemble, nous créons des événements, entretenons nos jardins partagés, et aidons les plus démunis dans un esprit de fraternité.';
+            document.getElementById('cms-asso-quote').value = cmsData['asso-quote'] || '<p style="font-style: italic; margin-bottom: 0;">"Rejoindre l\'association, c\'est participer à la construction d\'un quotidien plus chaleureux. Les images de notre galerie parlent d\'elles-mêmes : le partage et l\'entraide sont au cœur de nos actions."</p>';
         }
 
         function saveCMS() {
@@ -268,7 +273,8 @@
                 'mission-desc': document.getElementById('cms-mission-desc').value,
                 'asso-title': document.getElementById('cms-asso-title').value,
                 'asso-lead': document.getElementById('cms-asso-lead').value,
-                'asso-desc': document.getElementById('cms-asso-desc').value
+                'asso-desc': document.getElementById('cms-asso-desc').value,
+                'asso-quote': document.getElementById('cms-asso-quote').value
             };
             localStorage.setItem('falguiere_content', JSON.stringify(cmsData));
             alert('Modifications enregistrées ! Elles sont maintenant visibles sur le site.');
