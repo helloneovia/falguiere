@@ -669,3 +669,8 @@ ul {
         width: 100%;
     }
 }
+
+/* Adhesion Highlight */
+.adhesion-highlight { border: 2px solid var(--primary); box-shadow: 0 0 20px rgba(217, 119, 67, 0.3); transition: var(--transition); }
+.adhesion-highlight:hover { box-shadow: 0 0 30px rgba(217, 119, 67, 0.5); transform: translateY(-5px); }
+

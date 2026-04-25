@@ -116,8 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return {
             name: form.querySelector('#adhesionName').value,
             email: form.querySelector('#adhesionEmail').value,
-            phone: form.querySelector('#adhesionPhone').value,
-            motivation: form.querySelector('#adhesionMotivation').value
+            phone: form.querySelector('#adhesionPhone').value
         };
     });
 });

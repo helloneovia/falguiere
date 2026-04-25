@@ -52,7 +52,6 @@
                                 <th>Date</th>
                                 <th>Nom</th>
                                 <th>Contact</th>
-                                <th>Motivation</th>
                             </tr>
                         </thead>
                         <tbody id="adhesionsTableBody">
@@ -98,7 +97,7 @@
             const data = JSON.parse(localStorage.getItem('falguiere_adhesions')) || [];
             
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Aucune adhésion pour le moment.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="3" class="empty-state">Aucune adhésion pour le moment.</td></tr>';
                 return;
             }
 
@@ -110,7 +109,6 @@
                         <a href="mailto:${item.email}" class="text-accent">${item.email}</a><br>
                         <span style="font-size:0.9em; color:#666;">${item.phone || 'Non renseigné'}</span>
                     </td>
-                    <td style="max-width: 300px; white-space: pre-wrap;">${item.motivation}</td>
                 </tr>
             `).reverse().join('');
         }

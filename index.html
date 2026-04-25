@@ -49,7 +49,7 @@
             <p>L'Association Falguière s'engage au quotidien pour aider le quartier à se développer, recréer du lien social et lutter contre la précarité.</p>
             <div class="hero-buttons">
                 <a href="#actions" class="btn btn-primary btn-lg">Découvrir nos actions</a>
-                <a href="#contact" class="btn btn-outline btn-lg">Nous soutenir</a>
+                <a href="#adhesion" class="btn btn-outline btn-lg">Nous soutenir</a>
             </div>
         </div>
     </header>
@@ -123,7 +123,7 @@
                 <h2 class="section-title">Rejoignez la <span class="text-accent">Cause</span></h2>
                 <p class="section-subtitle">Devenez membre de l'association et participez activement à nos projets de quartier.</p>
             </div>
-            <div class="glass-card fade-in-up delay-1" style="max-width: 800px; margin: 0 auto; background: var(--white);">
+            <div class="glass-card fade-in-up delay-1 adhesion-highlight" style="max-width: 800px; margin: 0 auto; background: var(--white);">
                 <form class="contact-form" id="adhesionForm">
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
                         <div class="form-group">
@@ -139,12 +139,24 @@
                         <label for="adhesionPhone">Téléphone (optionnel)</label>
                         <input type="tel" id="adhesionPhone" placeholder="Votre numéro">
                     </div>
-                    <div class="form-group" style="margin-top: 1.5rem;">
-                        <label for="adhesionMotivation">Pourquoi souhaitez-vous nous rejoindre ?</label>
-                        <textarea id="adhesionMotivation" rows="3" required placeholder="Vos motivations, vos compétences..."></textarea>
-                    </div>
                     <button type="submit" class="btn btn-primary w-full" style="margin-top: 1.5rem;">Envoyer ma demande d'adhésion</button>
                 </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Vie Asso Section -->
+    <section id="vie-asso" class="section bg-light">
+        <div class="container">
+            <div class="mission-grid">
+                <div class="mission-image fade-in-up">
+                    <img src="assets/community-gathering.png" alt="Vie de l'association" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); object-fit: cover;">
+                </div>
+                <div class="mission-text fade-in-up delay-1">
+                    <h2 class="section-title">Une association <span class="text-accent">par et pour</span> les habitants</h2>
+                    <p class="lead">Chaque jour, de nouveaux membres nous rejoignent pour donner vie au quartier Falguière.</p>
+                    <p>Notre force réside dans la diversité et l'engagement de nos bénévoles. Que vous ayez quelques heures par mois ou plusieurs jours par semaine à consacrer, chaque aide compte. Ensemble, nous créons des événements, entretenons nos jardins partagés, et aidons les plus démunis dans un esprit de fraternité.</p>
+                </div>
             </div>
         </div>
     </section>
@@ -174,6 +186,10 @@
                             </div>
                         </li>
                     </ul>
+                    
+                    <div class="map-container" style="margin-top: 2rem; border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm);">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2625.5905187702816!2d2.316828!3d48.8402513!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47e6703541bd1e33%3A0xc31481b7e62a0df8!2s133%20Rue%20Falgui%C3%A8re%2C%2075015%20Paris!5e0!3m2!1sfr!2sfr!4v1713530000000!5m2!1sfr!2sfr" width="100%" height="200" style="border:0; display: block;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    </div>
                 </div>
                 
                 <form class="contact-form" id="contactForm">
