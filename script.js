@@ -64,19 +64,33 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(element);
     });
 
-    // Form submission handling (prevent default for demo)
-    const contactForm = document.getElementById('contactForm');
-    if (contactForm) {
-        contactForm.addEventListener('submit', (e) => {
+    // Function to save data to localStorage
+    function saveToLocalStorage(key, data) {
+        let items = JSON.parse(localStorage.getItem(key)) || [];
+        data.date = new Date().toISOString();
+        items.push(data);
+        localStorage.setItem(key, JSON.stringify(items));
+    }
+
+    // Function to handle form UI feedback
+    function handleFormSubmit(form, key, extractDataCallback) {
+        if (!form) return;
+        
+        form.addEventListener('submit', (e) => {
             e.preventDefault();
-            const btn = contactForm.querySelector('button[type="submit"]');
+            const btn = form.querySelector('button[type="submit"]');
             const originalText = btn.textContent;
             
-            btn.textContent = 'Message envoyé ✓';
+            // Extract and save data
+            const data = extractDataCallback(form);
+            saveToLocalStorage(key, data);
+            
+            // UI Feedback
+            btn.textContent = 'Envoyé avec succès ✓';
             btn.style.backgroundColor = '#10b981'; // Green color for success
             btn.style.borderColor = '#10b981';
             
-            contactForm.reset();
+            form.reset();
             
             setTimeout(() => {
                 btn.textContent = originalText;
@@ -85,4 +99,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 3000);
         });
     }
+
+    // Contact Form
+    const contactForm = document.getElementById('contactForm');
+    handleFormSubmit(contactForm, 'falguiere_messages', (form) => {
+        return {
+            name: form.querySelector('#name').value,
+            email: form.querySelector('#email').value,
+            message: form.querySelector('#message').value
+        };
+    });
+
+    // Adhesion Form
+    const adhesionForm = document.getElementById('adhesionForm');
+    handleFormSubmit(adhesionForm, 'falguiere_adhesions', (form) => {
+        return {
+            name: form.querySelector('#adhesionName').value,
+            email: form.querySelector('#adhesionEmail').value,
+            phone: form.querySelector('#adhesionPhone').value,
+            motivation: form.querySelector('#adhesionMotivation').value
+        };
+    });
 });

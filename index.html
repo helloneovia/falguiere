@@ -20,7 +20,7 @@
             <div class="nav-links">
                 <a href="#mission">Notre Mission</a>
                 <a href="#actions">Nos Actions</a>
-                <a href="#contact" class="btn btn-primary">Nous Rejoindre</a>
+                <a href="#adhesion" class="btn btn-primary">Nous Rejoindre</a>
             </div>
             <button class="mobile-menu-btn" aria-label="Menu">
                 <span></span>
@@ -34,7 +34,7 @@
     <div class="mobile-menu">
         <a href="#mission" class="mobile-link">Notre Mission</a>
         <a href="#actions" class="mobile-link">Nos Actions</a>
-        <a href="#contact" class="btn btn-primary w-full text-center mt-4">Nous Rejoindre</a>
+        <a href="#adhesion" class="btn btn-primary w-full text-center mt-4">Nous Rejoindre</a>
     </div>
 
     <!-- Hero Section -->
@@ -116,6 +116,39 @@
         </div>
     </section>
 
+    <!-- Adhesion Section -->
+    <section id="adhesion" class="section adhesion-section">
+        <div class="container">
+            <div class="text-center fade-in-up">
+                <h2 class="section-title">Rejoignez la <span class="text-accent">Cause</span></h2>
+                <p class="section-subtitle">Devenez membre de l'association et participez activement à nos projets de quartier.</p>
+            </div>
+            <div class="glass-card fade-in-up delay-1" style="max-width: 800px; margin: 0 auto; background: var(--white);">
+                <form class="contact-form" id="adhesionForm">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                        <div class="form-group">
+                            <label for="adhesionName">Nom & Prénom</label>
+                            <input type="text" id="adhesionName" required placeholder="Votre nom complet">
+                        </div>
+                        <div class="form-group">
+                            <label for="adhesionEmail">Email</label>
+                            <input type="email" id="adhesionEmail" required placeholder="votre@email.com">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 1.5rem;">
+                        <label for="adhesionPhone">Téléphone (optionnel)</label>
+                        <input type="tel" id="adhesionPhone" placeholder="Votre numéro">
+                    </div>
+                    <div class="form-group" style="margin-top: 1.5rem;">
+                        <label for="adhesionMotivation">Pourquoi souhaitez-vous nous rejoindre ?</label>
+                        <textarea id="adhesionMotivation" rows="3" required placeholder="Vos motivations, vos compétences..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-full" style="margin-top: 1.5rem;">Envoyer ma demande d'adhésion</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
     <!-- Contact Section -->
     <section id="contact" class="section contact-section">
         <div class="container">
@@ -171,7 +204,7 @@
             </div>
             <p class="footer-text">L'association pour le développement et la solidarité du quartier Falguière à Paris 15e.</p>
             <div class="footer-bottom">
-                <p>&copy; 2026 Association Falguière. Tous droits réservés.</p>
+                <p>&copy; 2026 Association Falguière. Tous droits réservés. | <a href="admin.html" style="text-decoration: underline; opacity: 0.7;">Espace Admin</a></p>
             </div>
         </div>
     </footer>

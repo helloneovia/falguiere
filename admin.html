@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration | Association Falguière</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body { background-color: var(--gray-bg); padding-top: 2rem; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+        .admin-card { background: var(--white); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-sm); }
+        .admin-card h2 { margin-bottom: 1.5rem; font-size: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 1rem; border-bottom: 1px solid #e2e8f0; }
+        th { font-weight: 600; color: var(--dark); background-color: #f8fafc; }
+        tr:last-child td { border-bottom: none; }
+        .empty-state { text-align: center; padding: 2rem; color: var(--dark-muted); font-style: italic; }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.875rem; border-radius: var(--radius-md); }
+        .btn-danger { background-color: #ef4444; color: white; border: none; cursor: pointer; }
+        .btn-danger:hover { background-color: #dc2626; }
+        .badge-date { font-size: 0.8rem; background: #e2e8f0; padding: 0.2rem 0.5rem; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="admin-header">
+            <div>
+                <a href="index.html" class="logo" style="color: var(--dark);">
+                    <span class="logo-accent">FAL</span>GUIÈRE
+                </a>
+                <h1 style="margin-top: 0.5rem;">Tableau de bord</h1>
+            </div>
+            <a href="index.html" class="btn btn-outline" style="color: var(--dark); border-color: var(--dark-muted);">Retour au site</a>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Adhésions -->
+            <div class="admin-card">
+                <h2>
+                    <span>📋 Nouvelles Adhésions</span>
+                    <button class="btn-sm btn-danger" onclick="clearData('falguiere_adhesions')">Tout effacer</button>
+                </h2>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Nom</th>
+                                <th>Contact</th>
+                                <th>Motivation</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adhesionsTableBody">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div class="admin-card">
+                <h2>
+                    <span>✉️ Messages Reçus</span>
+                    <button class="btn-sm btn-danger" onclick="clearData('falguiere_messages')">Tout effacer</button>
+                </h2>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Expéditeur</th>
+                                <th>Email</th>
+                                <th>Message</th>
+                            </tr>
+                        </thead>
+                        <tbody id="messagesTableBody">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function formatDate(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute:'2-digit' });
+        }
+
+        function renderAdhesions() {
+            const tbody = document.getElementById('adhesionsTableBody');
+            const data = JSON.parse(localStorage.getItem('falguiere_adhesions')) || [];
+            
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Aucune adhésion pour le moment.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(item => `
+                <tr>
+                    <td><span class="badge-date">${formatDate(item.date)}</span></td>
+                    <td><strong>${item.name}</strong></td>
+                    <td>
+                        <a href="mailto:${item.email}" class="text-accent">${item.email}</a><br>
+                        <span style="font-size:0.9em; color:#666;">${item.phone || 'Non renseigné'}</span>
+                    </td>
+                    <td style="max-width: 300px; white-space: pre-wrap;">${item.motivation}</td>
+                </tr>
+            `).reverse().join('');
+        }
+
+        function renderMessages() {
+            const tbody = document.getElementById('messagesTableBody');
+            const data = JSON.parse(localStorage.getItem('falguiere_messages')) || [];
+            
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Aucun message pour le moment.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(item => `
+                <tr>
+                    <td><span class="badge-date">${formatDate(item.date)}</span></td>
+                    <td><strong>${item.name}</strong></td>
+                    <td><a href="mailto:${item.email}" class="text-accent">${item.email}</a></td>
+                    <td style="max-width: 400px; white-space: pre-wrap;">${item.message}</td>
+                </tr>
+            `).reverse().join('');
+        }
+
+        function clearData(key) {
+            if (confirm('Êtes-vous sûr de vouloir effacer toutes ces données ? Cette action est irréversible.')) {
+                localStorage.removeItem(key);
+                if (key === 'falguiere_adhesions') renderAdhesions();
+                if (key === 'falguiere_messages') renderMessages();
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAdhesions();
+            renderMessages();
+        });
+    </script>
+</body>
+</html>
