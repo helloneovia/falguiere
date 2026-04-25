@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
     <style>
         body { background-color: var(--gray-bg); padding-top: 2rem; }
@@ -24,10 +25,33 @@
         .btn-danger { background-color: #ef4444; color: white; border: none; cursor: pointer; }
         .btn-danger:hover { background-color: #dc2626; }
         .badge-date { font-size: 0.8rem; background: #e2e8f0; padding: 0.2rem 0.5rem; border-radius: 4px; }
+        
+        /* CMS Editor Styles */
+        .cms-field { margin-bottom: 1.5rem; }
+        .cms-field label { display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--dark); }
+        .cms-field input, .cms-field textarea { width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: var(--radius-md); font-family: inherit; }
+        
+        /* Overlay Login */
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark); z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        .login-box { background: var(--white); padding: 3rem; border-radius: var(--radius-lg); text-align: center; max-width: 400px; width: 90%; }
+        .login-box h2 { margin-bottom: 1.5rem; }
+        .login-box input { width: 100%; padding: 1rem; text-align: center; font-size: 1.2rem; letter-spacing: 5px; margin-bottom: 1rem; border: 2px solid #e2e8f0; border-radius: var(--radius-md); }
+        .error-msg { color: #ef4444; font-size: 0.9rem; margin-bottom: 1rem; display: none; }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Login Overlay -->
+    <div id="loginOverlay">
+        <div class="login-box">
+            <h2>Accès Sécurisé</h2>
+            <p style="margin-bottom: 1rem; color: var(--dark-muted);">Veuillez entrer le mot de passe pour accéder à l'administration.</p>
+            <input type="password" id="adminPwd" placeholder="•••••" onkeypress="if(event.key === 'Enter') checkPassword()">
+            <div id="loginError" class="error-msg">Mot de passe incorrect</div>
+            <button class="btn btn-primary w-full" onclick="checkPassword()">Déverrouiller</button>
+        </div>
+    </div>
+
+    <div class="container" id="adminContent" style="display: none;">
         <div class="admin-header">
             <div>
                 <a href="index.html" class="logo" style="color: var(--dark);">
@@ -39,6 +63,58 @@
         </div>
 
         <div class="dashboard-grid">
+            <!-- CMS Editor -->
+            <div class="admin-card">
+                <h2>
+                    <span>✏️ Éditeur de Site (CMS)</span>
+                    <button class="btn btn-primary" onclick="saveCMS()">Enregistrer le site</button>
+                </h2>
+                <p style="margin-bottom: 2rem; font-size: 0.9rem; color: var(--dark-muted);">Modifiez les textes du site ci-dessous. Les changements s'appliqueront immédiatement sur l'accueil.</p>
+                
+                <form id="cmsForm">
+                    <div class="cms-field">
+                        <label>Badge de l'en-tête</label>
+                        <input type="text" id="cms-hero-badge" placeholder="Paris 15e">
+                    </div>
+                    <div class="cms-field">
+                        <label>Titre principal (HTML autorisé, ex: &lt;span class="text-gradient"&gt;Quartier&lt;/span&gt;)</label>
+                        <input type="text" id="cms-hero-title">
+                    </div>
+                    <div class="cms-field">
+                        <label>Description sous le titre principal</label>
+                        <textarea id="cms-hero-desc" rows="3"></textarea>
+                    </div>
+                    <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e2e8f0;">
+                    
+                    <div class="cms-field">
+                        <label>Titre de la section Mission</label>
+                        <input type="text" id="cms-mission-title">
+                    </div>
+                    <div class="cms-field">
+                        <label>Introduction de la mission (Gras)</label>
+                        <textarea id="cms-mission-lead" rows="2"></textarea>
+                    </div>
+                    <div class="cms-field">
+                        <label>Description de la mission</label>
+                        <textarea id="cms-mission-desc" rows="3"></textarea>
+                    </div>
+                    <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e2e8f0;">
+                    
+                    <div class="cms-field">
+                        <label>Titre de la section Vie Asso</label>
+                        <input type="text" id="cms-asso-title">
+                    </div>
+                    <div class="cms-field">
+                        <label>Introduction Vie Asso (Gras)</label>
+                        <textarea id="cms-asso-lead" rows="2"></textarea>
+                    </div>
+                    <div class="cms-field">
+                        <label>Description Vie Asso</label>
+                        <textarea id="cms-asso-desc" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+
             <!-- Adhésions -->
             <div class="admin-card">
                 <h2>
@@ -87,6 +163,31 @@
     </div>
 
     <script>
+        // --- Security / Login ---
+        function checkPassword() {
+            const pwd = document.getElementById('adminPwd').value;
+            if (pwd === '75015') {
+                sessionStorage.setItem('admin_auth', 'true');
+                unlockAdmin();
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+
+        function unlockAdmin() {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('adminContent').style.display = 'block';
+            initCMS();
+            renderAdhesions();
+            renderMessages();
+        }
+
+        // Check on load
+        if (sessionStorage.getItem('admin_auth') === 'true') {
+            unlockAdmin();
+        }
+
+        // --- Dashboard Data ---
         function formatDate(isoString) {
             const date = new Date(isoString);
             return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute:'2-digit' });
@@ -140,11 +241,38 @@
             }
         }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            renderAdhesions();
-            renderMessages();
-        });
+        // --- CMS Logic ---
+        function initCMS() {
+            const cmsData = JSON.parse(localStorage.getItem('falguiere_content')) || {};
+            // Default values if empty
+            document.getElementById('cms-hero-badge').value = cmsData['hero-badge'] || 'Paris 15e';
+            document.getElementById('cms-hero-title').value = cmsData['hero-title'] || 'Ensemble pour notre<br><span class="text-gradient">Quartier</span>';
+            document.getElementById('cms-hero-desc').value = cmsData['hero-desc'] || "L'Association Falguière s'engage au quotidien pour aider le quartier à se développer, recréer du lien social et lutter contre la précarité.";
+            
+            document.getElementById('cms-mission-title').value = cmsData['mission-title'] || 'Plus qu\'un quartier,<br>une <span class="text-accent">communauté</span>.';
+            document.getElementById('cms-mission-lead').value = cmsData['mission-lead'] || 'Le quartier Falguière a du potentiel. Notre mission est de l\'aider à sortir de la promiscuité et d\'offrir de nouvelles perspectives à ses habitants.';
+            document.getElementById('cms-mission-desc').value = cmsData['mission-desc'] || 'À travers l\'entraide, l\'écoute et l\'action de terrain, nous luttons contre l\'isolement et la pauvreté. Nous croyons en un avenir meilleur, construit par et pour les résidents du 15ème arrondissement.';
+            
+            document.getElementById('cms-asso-title').value = cmsData['asso-title'] || 'Une association <span class="text-accent">par et pour</span> les habitants';
+            document.getElementById('cms-asso-lead').value = cmsData['asso-lead'] || 'Chaque jour, de nouveaux membres nous rejoignent pour donner vie au quartier Falguière.';
+            document.getElementById('cms-asso-desc').value = cmsData['asso-desc'] || 'Notre force réside dans la diversité et l\'engagement de nos bénévoles. Que vous ayez quelques heures par mois ou plusieurs jours par semaine à consacrer, chaque aide compte. Ensemble, nous créons des événements, entretenons nos jardins partagés, et aidons les plus démunis dans un esprit de fraternité.';
+        }
+
+        function saveCMS() {
+            const cmsData = {
+                'hero-badge': document.getElementById('cms-hero-badge').value,
+                'hero-title': document.getElementById('cms-hero-title').value,
+                'hero-desc': document.getElementById('cms-hero-desc').value,
+                'mission-title': document.getElementById('cms-mission-title').value,
+                'mission-lead': document.getElementById('cms-mission-lead').value,
+                'mission-desc': document.getElementById('cms-mission-desc').value,
+                'asso-title': document.getElementById('cms-asso-title').value,
+                'asso-lead': document.getElementById('cms-asso-lead').value,
+                'asso-desc': document.getElementById('cms-asso-desc').value
+            };
+            localStorage.setItem('falguiere_content', JSON.stringify(cmsData));
+            alert('Modifications enregistrées ! Elles sont maintenant visibles sur le site.');
+        }
     </script>
 </body>
 </html>

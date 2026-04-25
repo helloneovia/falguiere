@@ -119,4 +119,15 @@ document.addEventListener('DOMContentLoaded', () => {
             phone: form.querySelector('#adhesionPhone').value
         };
     });
+
+    // CMS Loader
+    const cmsData = JSON.parse(localStorage.getItem('falguiere_content'));
+    if (cmsData) {
+        document.querySelectorAll('[data-cms]').forEach(el => {
+            const key = el.getAttribute('data-cms');
+            if (cmsData[key]) {
+                el.innerHTML = cmsData[key];
+            }
+        });
+    }
 });
