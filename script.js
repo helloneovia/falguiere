@@ -71,20 +71,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Function to save data to localStorage
-    function saveToLocalStorage(key, data) {
+    // Function to save data to the new API securely
+    async function saveToDatabase(endpoint, data) {
         try {
-            let items = JSON.parse(localStorage.getItem(key)) || [];
-            data.date = new Date().toISOString();
-            items.push(data);
-            localStorage.setItem(key, JSON.stringify(items));
+            await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
         } catch (e) {
-            console.warn('LocalStorage error:', e);
+            console.error('Database error:', e);
         }
     }
 
     // Function to handle form UI feedback
-    function handleFormSubmit(form, key, extractDataCallback) {
+    function handleFormSubmit(form, apiEndpoint, extractDataCallback) {
         if (!form) return;
         
         form.addEventListener('submit', async (e) => {
@@ -92,9 +95,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const btn = form.querySelector('button[type="submit"]');
             const originalText = btn.textContent;
             
-            // Extract and save data locally for the admin panel
+            // Extract data
             const data = extractDataCallback(form);
-            saveToLocalStorage(key, data);
+            
+            // Save to database
+            await saveToDatabase(apiEndpoint, data);
 
             btn.textContent = 'Envoi en cours...';
             btn.style.opacity = '0.7';
@@ -132,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Contact Form
     const contactForm = document.getElementById('contactForm');
-    handleFormSubmit(contactForm, 'falguiere_messages', (form) => {
+    handleFormSubmit(contactForm, '/api/messages', (form) => {
         return {
             name: form.querySelector('#name').value,
             email: form.querySelector('#email').value,
@@ -142,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Adhesion Form
     const adhesionForm = document.getElementById('adhesionForm');
-    handleFormSubmit(adhesionForm, 'falguiere_adhesions', (form) => {
+    handleFormSubmit(adhesionForm, '/api/adhesions', (form) => {
         return {
             name: form.querySelector('#adhesionName').value,
             email: form.querySelector('#adhesionEmail').value,
@@ -150,18 +155,25 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     });
 
-    // CMS Loader
-    try {
-        const cmsData = JSON.parse(localStorage.getItem('falguiere_content'));
-        if (cmsData) {
-            document.querySelectorAll('[data-cms]').forEach(el => {
-                const key = el.getAttribute('data-cms');
-                if (cmsData[key]) {
-                    el.innerHTML = cmsData[key];
-                }
-            });
+    // CMS Loader from API
+    async function loadCMS() {
+        try {
+            const response = await fetch('/api/cms');
+            if (!response.ok) return;
+            const cmsData = await response.json();
+            
+            if (Object.keys(cmsData).length > 0) {
+                document.querySelectorAll('[data-cms]').forEach(el => {
+                    const key = el.getAttribute('data-cms');
+                    if (cmsData[key]) {
+                        el.innerHTML = cmsData[key];
+                    }
+                });
+            }
+        } catch (e) {
+            console.warn('CMS Loader error:', e);
         }
-    } catch (e) {
-        console.warn('CMS error:', e);
     }
+    
+    loadCMS();
 });

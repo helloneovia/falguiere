@@ -123,7 +123,7 @@
             <div class="admin-card">
                 <h2>
                     <span>📋 Nouvelles Adhésions</span>
-                    <button class="btn-sm btn-danger" onclick="clearData('falguiere_adhesions')">Tout effacer</button>
+                    <button class="btn-sm btn-danger" onclick="clearData('adhesions')">Tout effacer</button>
                 </h2>
                 <div class="table-responsive">
                     <table>
@@ -145,7 +145,7 @@
             <div class="admin-card">
                 <h2>
                     <span>✉️ Messages Reçus</span>
-                    <button class="btn-sm btn-danger" onclick="clearData('falguiere_messages')">Tout effacer</button>
+                    <button class="btn-sm btn-danger" onclick="clearData('messages')">Tout effacer</button>
                 </h2>
                 <div class="table-responsive">
                     <table>
@@ -197,73 +197,101 @@
             return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute:'2-digit' });
         }
 
-        function renderAdhesions() {
+        async function renderAdhesions() {
             const tbody = document.getElementById('adhesionsTableBody');
-            const data = JSON.parse(localStorage.getItem('falguiere_adhesions')) || [];
-            
-            if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" class="empty-state">Aucune adhésion pour le moment.</td></tr>';
-                return;
-            }
+            try {
+                const response = await fetch('/api/adhesions');
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="empty-state">Aucune adhésion pour le moment.</td></tr>';
+                    return;
+                }
 
-            tbody.innerHTML = data.map(item => `
-                <tr>
-                    <td><span class="badge-date">${formatDate(item.date)}</span></td>
-                    <td><strong>${item.name}</strong></td>
-                    <td>
-                        <a href="mailto:${item.email}" class="text-accent">${item.email}</a><br>
-                        <span style="font-size:0.9em; color:#666;">${item.phone || 'Non renseigné'}</span>
-                    </td>
-                </tr>
-            `).reverse().join('');
+                tbody.innerHTML = data.map(item => `
+                    <tr>
+                        <td><span class="badge-date">${formatDate(item.date)}</span></td>
+                        <td><strong>${item.name}</strong></td>
+                        <td>
+                            <a href="mailto:${item.email}" class="text-accent">${item.email}</a><br>
+                            <span style="font-size:0.9em; color:#666;">${item.phone || 'Non renseigné'}</span>
+                        </td>
+                    </tr>
+                `).join(''); // Data from DB is already ordered by date DESC
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = '<tr><td colspan="3" class="empty-state" style="color: #ef4444;">Erreur lors du chargement des données.</td></tr>';
+            }
         }
 
-        function renderMessages() {
+        async function renderMessages() {
             const tbody = document.getElementById('messagesTableBody');
-            const data = JSON.parse(localStorage.getItem('falguiere_messages')) || [];
-            
-            if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Aucun message pour le moment.</td></tr>';
-                return;
-            }
+            try {
+                const response = await fetch('/api/messages');
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Aucun message pour le moment.</td></tr>';
+                    return;
+                }
 
-            tbody.innerHTML = data.map(item => `
-                <tr>
-                    <td><span class="badge-date">${formatDate(item.date)}</span></td>
-                    <td><strong>${item.name}</strong></td>
-                    <td><a href="mailto:${item.email}" class="text-accent">${item.email}</a></td>
-                    <td style="max-width: 400px; white-space: pre-wrap;">${item.message}</td>
-                </tr>
-            `).reverse().join('');
+                tbody.innerHTML = data.map(item => `
+                    <tr>
+                        <td><span class="badge-date">${formatDate(item.date)}</span></td>
+                        <td><strong>${item.name}</strong></td>
+                        <td><a href="mailto:${item.email}" class="text-accent">${item.email}</a></td>
+                        <td style="max-width: 400px; white-space: pre-wrap;">${item.message}</td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-state" style="color: #ef4444;">Erreur lors du chargement des données.</td></tr>';
+            }
         }
 
-        function clearData(key) {
+        async function clearData(type) {
             if (confirm('Êtes-vous sûr de vouloir effacer toutes ces données ? Cette action est irréversible.')) {
-                localStorage.removeItem(key);
-                if (key === 'falguiere_adhesions') renderAdhesions();
-                if (key === 'falguiere_messages') renderMessages();
+                try {
+                    await fetch(`/api/${type}`, { method: 'DELETE' });
+                    if (type === 'adhesions') renderAdhesions();
+                    if (type === 'messages') renderMessages();
+                } catch (err) {
+                    console.error(err);
+                    alert('Erreur lors de la suppression');
+                }
             }
         }
 
         // --- CMS Logic ---
-        function initCMS() {
-            const cmsData = JSON.parse(localStorage.getItem('falguiere_content')) || {};
-            // Default values if empty
-            document.getElementById('cms-hero-badge').value = cmsData['hero-badge'] || 'Paris 15e';
-            document.getElementById('cms-hero-title').value = cmsData['hero-title'] || 'Ensemble pour notre<br><span class="text-gradient">Quartier</span>';
-            document.getElementById('cms-hero-desc').value = cmsData['hero-desc'] || "L'Association Falguière s'engage au quotidien pour aider le quartier à se développer, recréer du lien social et lutter contre la précarité.";
-            
-            document.getElementById('cms-mission-title').value = cmsData['mission-title'] || 'Plus qu\'un quartier,<br>une <span class="text-accent">communauté</span>.';
-            document.getElementById('cms-mission-lead').value = cmsData['mission-lead'] || 'Le quartier Falguière a du potentiel. Notre mission est de l\'aider à sortir de la promiscuité et d\'offrir de nouvelles perspectives à ses habitants.';
-            document.getElementById('cms-mission-desc').value = cmsData['mission-desc'] || 'À travers l\'entraide, l\'écoute et l\'action de terrain, nous luttons contre l\'isolement et la pauvreté. Nous croyons en un avenir meilleur, construit par et pour les résidents du 15ème arrondissement.';
-            
-            document.getElementById('cms-asso-title').value = cmsData['asso-title'] || 'Une association <span class="text-accent">par et pour</span> les habitants';
-            document.getElementById('cms-asso-lead').value = cmsData['asso-lead'] || 'Chaque jour, de nouveaux membres nous rejoignent pour donner vie au quartier Falguière.';
-            document.getElementById('cms-asso-desc').value = cmsData['asso-desc'] || 'Notre force réside dans la diversité et l\'engagement de nos bénévoles. Que vous ayez quelques heures par mois ou plusieurs jours par semaine à consacrer, chaque aide compte. Ensemble, nous créons des événements, entretenons nos jardins partagés, et aidons les plus démunis dans un esprit de fraternité.';
-            document.getElementById('cms-asso-quote').value = cmsData['asso-quote'] || '<p style="font-style: italic; margin-bottom: 0;">"Rejoindre l\'association, c\'est participer à la construction d\'un quotidien plus chaleureux. Les images de notre galerie parlent d\'elles-mêmes : le partage et l\'entraide sont au cœur de nos actions."</p>';
+        async function initCMS() {
+            try {
+                const response = await fetch('/api/cms');
+                let cmsData = {};
+                if (response.ok) {
+                    cmsData = await response.json();
+                }
+                
+                // Default values if empty
+                document.getElementById('cms-hero-badge').value = cmsData['hero-badge'] || 'Paris 15e';
+                document.getElementById('cms-hero-title').value = cmsData['hero-title'] || 'Ensemble pour notre<br><span class="text-gradient">Quartier</span>';
+                document.getElementById('cms-hero-desc').value = cmsData['hero-desc'] || "L'Association Falguière s'engage au quotidien pour aider le quartier à se développer, recréer du lien social et lutter contre la précarité.";
+                
+                document.getElementById('cms-mission-title').value = cmsData['mission-title'] || 'Plus qu\\'un quartier,<br>une <span class="text-accent">communauté</span>.';
+                document.getElementById('cms-mission-lead').value = cmsData['mission-lead'] || 'Le quartier Falguière a du potentiel. Notre mission est de l\\'aider à sortir de la promiscuité et d\\'offrir de nouvelles perspectives à ses habitants.';
+                document.getElementById('cms-mission-desc').value = cmsData['mission-desc'] || 'À travers l\\'entraide, l\\'écoute et l\\'action de terrain, nous luttons contre l\\'isolement et la pauvreté. Nous croyons en un avenir meilleur, construit par et pour les résidents du 15ème arrondissement.';
+                
+                document.getElementById('cms-asso-title').value = cmsData['asso-title'] || 'Une association <span class="text-accent">par et pour</span> les habitants';
+                document.getElementById('cms-asso-lead').value = cmsData['asso-lead'] || 'Chaque jour, de nouveaux membres nous rejoignent pour donner vie au quartier Falguière.';
+                document.getElementById('cms-asso-desc').value = cmsData['asso-desc'] || 'Notre force réside dans la diversité et l\\'engagement de nos bénévoles. Que vous ayez quelques heures par mois ou plusieurs jours par semaine à consacrer, chaque aide compte. Ensemble, nous créons des événements, entretenons nos jardins partagés, et aidons les plus démunis dans un esprit de fraternité.';
+                document.getElementById('cms-asso-quote').value = cmsData['asso-quote'] || '<p style="font-style: italic; margin-bottom: 0;">"Rejoindre l\\'association, c\\'est participer à la construction d\\'un quotidien plus chaleureux. Les images de notre galerie parlent d\\'elles-mêmes : le partage et l\\'entraide sont au cœur de nos actions."</p>';
+            } catch (err) {
+                console.error('Error loading CMS data:', err);
+            }
         }
 
-        function saveCMS() {
+        async function saveCMS() {
             const cmsData = {
                 'hero-badge': document.getElementById('cms-hero-badge').value,
                 'hero-title': document.getElementById('cms-hero-title').value,
@@ -276,8 +304,31 @@
                 'asso-desc': document.getElementById('cms-asso-desc').value,
                 'asso-quote': document.getElementById('cms-asso-quote').value
             };
-            localStorage.setItem('falguiere_content', JSON.stringify(cmsData));
-            alert('Modifications enregistrées ! Elles sont maintenant visibles sur le site.');
+            
+            const btn = document.querySelector('button[onclick="saveCMS()"]');
+            const originalText = btn.textContent;
+            btn.textContent = 'Enregistrement...';
+            
+            try {
+                const response = await fetch('/api/cms', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(cmsData)
+                });
+                
+                if (response.ok) {
+                    alert('Modifications enregistrées ! Elles sont maintenant visibles sur le site.');
+                } else {
+                    throw new Error('Server returned an error');
+                }
+            } catch (err) {
+                console.error('Error saving CMS:', err);
+                alert('Erreur lors de la sauvegarde.');
+            } finally {
+                btn.textContent = originalText;
+            }
         }
     </script>
 </body>
