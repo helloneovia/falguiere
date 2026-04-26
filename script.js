@@ -45,31 +45,42 @@ document.addEventListener('DOMContentLoaded', () => {
     // Intersection Observer for fade-in animations
     const fadeElements = document.querySelectorAll('.fade-in-up');
     
-    const observerOptions = {
-        root: null,
-        rootMargin: '0px',
-        threshold: 0.15
-    };
-    
-    const observer = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-                observer.unobserve(entry.target);
-            }
+    if ('IntersectionObserver' in window) {
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.15
+        };
+        
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+        
+        fadeElements.forEach(element => {
+            observer.observe(element);
         });
-    }, observerOptions);
-    
-    fadeElements.forEach(element => {
-        observer.observe(element);
-    });
+    } else {
+        // Fallback for older browsers
+        fadeElements.forEach(element => {
+            element.classList.add('visible');
+        });
+    }
 
     // Function to save data to localStorage
     function saveToLocalStorage(key, data) {
-        let items = JSON.parse(localStorage.getItem(key)) || [];
-        data.date = new Date().toISOString();
-        items.push(data);
-        localStorage.setItem(key, JSON.stringify(items));
+        try {
+            let items = JSON.parse(localStorage.getItem(key)) || [];
+            data.date = new Date().toISOString();
+            items.push(data);
+            localStorage.setItem(key, JSON.stringify(items));
+        } catch (e) {
+            console.warn('LocalStorage error:', e);
+        }
     }
 
     // Function to handle form UI feedback
@@ -140,13 +151,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // CMS Loader
-    const cmsData = JSON.parse(localStorage.getItem('falguiere_content'));
-    if (cmsData) {
-        document.querySelectorAll('[data-cms]').forEach(el => {
-            const key = el.getAttribute('data-cms');
-            if (cmsData[key]) {
-                el.innerHTML = cmsData[key];
-            }
-        });
+    try {
+        const cmsData = JSON.parse(localStorage.getItem('falguiere_content'));
+        if (cmsData) {
+            document.querySelectorAll('[data-cms]').forEach(el => {
+                const key = el.getAttribute('data-cms');
+                if (cmsData[key]) {
+                    el.innerHTML = cmsData[key];
+                }
+            });
+        }
+    } catch (e) {
+        console.warn('CMS error:', e);
     }
 });
