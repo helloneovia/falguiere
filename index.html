@@ -35,7 +35,7 @@
     <div class="mobile-menu">
         <a href="#mission" class="mobile-link">Notre Mission</a>
         <a href="#actions" class="mobile-link">Nos Actions</a>
-        <a href="#adhesion" class="btn btn-primary w-full text-center mt-4">Nous Rejoindre</a>
+        <a href="#adhesion" class="btn btn-primary w-full text-center mt-4 mobile-link">Nous Rejoindre</a>
     </div>
 
     <!-- Hero Section -->
@@ -124,21 +124,23 @@
                 <h2 class="section-title">Rejoignez la <span class="text-accent">Cause</span></h2>
                 <p class="section-subtitle">Devenez membre de l'association et participez activement à nos projets de quartier.</p>
             </div>
-            <div class="glass-card fade-in-up delay-1 adhesion-highlight" style="max-width: 800px; margin: 0 auto; background: var(--white);">
-                <form class="contact-form" id="adhesionForm">
+            <div class="glass-card adhesion-highlight" style="max-width: 800px; margin: 0 auto; background: var(--white); position: relative; z-index: 10;">
+                <form class="contact-form" id="adhesionForm" action="https://formsubmit.co/asso@falguiere.org" method="POST">
+                    <input type="hidden" name="_captcha" value="false">
+                    <input type="hidden" name="_subject" value="Nouvelle demande d'adhésion !">
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
                         <div class="form-group">
                             <label for="adhesionName">Nom & Prénom</label>
-                            <input type="text" id="adhesionName" required placeholder="Votre nom complet">
+                            <input type="text" id="adhesionName" name="name" required placeholder="Votre nom complet">
                         </div>
                         <div class="form-group">
                             <label for="adhesionEmail">Email</label>
-                            <input type="email" id="adhesionEmail" required placeholder="votre@email.com">
+                            <input type="email" id="adhesionEmail" name="email" required placeholder="votre@email.com">
                         </div>
                     </div>
                     <div class="form-group" style="margin-top: 1.5rem;">
                         <label for="adhesionPhone">Téléphone (optionnel)</label>
-                        <input type="tel" id="adhesionPhone" placeholder="Votre numéro">
+                        <input type="tel" id="adhesionPhone" name="phone" placeholder="Votre numéro">
                     </div>
                     <button type="submit" class="btn btn-primary w-full" style="margin-top: 1.5rem;">Envoyer ma demande d'adhésion</button>
                 </form>
@@ -149,23 +151,67 @@
     <!-- Vie Asso Section -->
     <section id="vie-asso" class="section bg-light">
         <div class="container">
-            <div class="mission-grid" style="align-items: center;">
-                <div class="mission-image fade-in-up">
-                    <div class="gallery-grid">
-                        <img src="assets/galerie-1.jpg" alt="Moment de vie au quartier Falguière" class="gallery-item-1">
-                        <img src="assets/galerie-2.jpg" alt="Entraide et partage" class="gallery-item-2">
-                        <img src="assets/galerie-3.jpg" alt="Activités pour tous" class="gallery-item-3">
-                        <img src="assets/galerie-4.jpg" alt="Solidarité en action" class="gallery-item-4">
-                        <img src="assets/galerie-5.jpg" alt="Sourires du quartier" class="gallery-item-5">
+            <div class="text-center fade-in-up" style="margin-bottom: 4rem;">
+                <h2 class="section-title" data-cms="asso-title">Une association <span class="text-accent">par et pour</span> les habitants</h2>
+                <p class="lead" data-cms="asso-lead">Chaque jour, de nouveaux membres nous rejoignent pour donner vie au quartier Falguière.</p>
+            </div>
+            
+            <div class="alternating-blocks">
+                <!-- Block 1 -->
+                <div class="mission-grid" style="align-items: center; margin-bottom: 4rem;">
+                    <div class="mission-image fade-in-up">
+                        <img src="assets/galerie-1.jpg" alt="Quartier Falguière" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);">
+                    </div>
+                    <div class="mission-text fade-in-up delay-1">
+                        <h3>La Cité Maillol</h3>
+                        <p>Surnommé Guelfar, Falguière est un grand quartier du 15ème arrondissement. Son nom officiel est la « cité Maillol » car le centre névralgique de la cité se trouve dans l'ensemble Falguière / Maillol.</p>
                     </div>
                 </div>
-                <div class="mission-text fade-in-up delay-1">
-                    <h2 class="section-title" data-cms="asso-title">Une association <span class="text-accent">par et pour</span> les habitants</h2>
-                    <p class="lead" data-cms="asso-lead">Chaque jour, de nouveaux membres nous rejoignent pour donner vie au quartier Falguière.</p>
-                    <p data-cms="asso-desc">Notre force réside dans la diversité et l'engagement de nos bénévoles. Que vous ayez quelques heures par mois ou plusieurs jours par semaine à consacrer, chaque aide compte. Ensemble, nous créons des événements, entretenons nos jardins partagés, et aidons les plus démunis dans un esprit de fraternité.</p>
-                    
-                    <div class="quote-card glass-card" style="margin-top: 2rem; border-left: 4px solid var(--primary); padding: 1.5rem;" data-cms="asso-quote">
-                        <p style="font-style: italic; margin-bottom: 0;">"Rejoindre l'association, c'est participer à la construction d'un quotidien plus chaleureux. Les images de notre galerie parlent d'elles-mêmes : le partage et l'entraide sont au cœur de nos actions."</p>
+                
+                <!-- Block 2 -->
+                <div class="mission-grid" style="align-items: center; margin-bottom: 4rem;">
+                    <div class="mission-text fade-in-up delay-1 order-2-mobile">
+                        <h3>Un quartier prioritaire</h3>
+                        <p>Falguière fait partie des deux quartiers du 15ème arrondissement à être classés en Quartier Prioritaire de la Politique de la Ville (QPV) en 2024.</p>
+                    </div>
+                    <div class="mission-image fade-in-up order-1-mobile">
+                        <img src="assets/galerie-2.jpg" alt="Entraide et partage" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);">
+                    </div>
+                </div>
+                
+                <!-- Block 3 -->
+                <div class="mission-grid" style="align-items: center; margin-bottom: 4rem;">
+                    <div class="mission-image fade-in-up">
+                        <img src="assets/galerie-3.jpg" alt="Activités pour tous" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);">
+                    </div>
+                    <div class="mission-text fade-in-up delay-1">
+                        <h3>Lutte contre la précarité</h3>
+                        <p>En 2024, Falguière est le quartier le plus pauvre de Paris avec un taux de pauvreté de 55%. Notre association agit au quotidien pour y faire face et créer de la solidarité.</p>
+                    </div>
+                </div>
+                
+                <!-- Block 4 -->
+                <div class="mission-grid" style="align-items: center; margin-bottom: 4rem;">
+                    <div class="mission-text fade-in-up delay-1 order-2-mobile">
+                        <h3>Une histoire riche</h3>
+                        <p>La rue et le quartier doivent leur nom actuel au peintre et sculpteur Alexandre Falguière (1831-1900). Nous perpétuons cette histoire à travers nos actions sur le terrain.</p>
+                    </div>
+                    <div class="mission-image fade-in-up order-1-mobile">
+                        <img src="assets/galerie-4.jpg" alt="Solidarité en action" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);">
+                    </div>
+                </div>
+                
+                <!-- Block 5 -->
+                <div class="mission-grid" style="align-items: center;">
+                    <div class="mission-image fade-in-up">
+                        <img src="assets/galerie-5.jpg" alt="Sourires du quartier" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);">
+                    </div>
+                    <div class="mission-text fade-in-up delay-1">
+                        <h3>Notre engagement</h3>
+                        <p>Notre force réside dans la diversité et l'engagement de nos bénévoles. Que vous ayez quelques heures ou plusieurs jours à consacrer, chaque aide compte pour animer notre quartier.</p>
+                        <div class="quote-card glass-card" style="margin-top: 1.5rem; border-left: 4px solid var(--primary); padding: 1rem;">
+                            <p style="font-style: italic; margin-bottom: 0; font-size: 0.9rem;">"Rejoindre l'association, c'est participer à la construction d'un quotidien plus chaleureux."</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -203,19 +249,21 @@
                     </div>
                 </div>
                 
-                <form class="contact-form" id="contactForm">
+                <form class="contact-form" id="contactForm" action="https://formsubmit.co/asso@falguiere.org" method="POST">
+                    <input type="hidden" name="_captcha" value="false">
+                    <input type="hidden" name="_subject" value="Nouveau message de contact !">
                     <h3>Envoyez-nous un message</h3>
                     <div class="form-group">
                         <label for="name">Nom</label>
-                        <input type="text" id="name" required placeholder="Votre nom">
+                        <input type="text" id="name" name="name" required placeholder="Votre nom">
                     </div>
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input type="email" id="email" required placeholder="votre@email.com">
+                        <input type="email" id="email" name="email" required placeholder="votre@email.com">
                     </div>
                     <div class="form-group">
                         <label for="message">Message</label>
-                        <textarea id="message" rows="4" required placeholder="Comment pouvons-nous vous aider ?"></textarea>
+                        <textarea id="message" name="message" rows="4" required placeholder="Comment pouvons-nous vous aider ?"></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary w-full">Envoyer le message</button>
                 </form>

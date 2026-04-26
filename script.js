@@ -76,19 +76,38 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleFormSubmit(form, key, extractDataCallback) {
         if (!form) return;
         
-        form.addEventListener('submit', (e) => {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = form.querySelector('button[type="submit"]');
             const originalText = btn.textContent;
             
-            // Extract and save data
+            // Extract and save data locally for the admin panel
             const data = extractDataCallback(form);
             saveToLocalStorage(key, data);
+
+            btn.textContent = 'Envoi en cours...';
+            btn.style.opacity = '0.7';
+            
+            // Actually submit the form data to FormSubmit
+            try {
+                if (form.action) {
+                    await fetch(form.action, {
+                        method: 'POST',
+                        body: new FormData(form),
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Erreur lors de l\'envoi:', error);
+            }
             
             // UI Feedback
             btn.textContent = 'Envoyé avec succès ✓';
             btn.style.backgroundColor = '#10b981'; // Green color for success
             btn.style.borderColor = '#10b981';
+            btn.style.opacity = '1';
             
             form.reset();
             
