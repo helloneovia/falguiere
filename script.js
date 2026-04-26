@@ -166,7 +166,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.querySelectorAll('[data-cms]').forEach(el => {
                     const key = el.getAttribute('data-cms');
                     if (cmsData[key]) {
-                        el.innerHTML = cmsData[key];
+                        if (el.tagName === 'IMG') {
+                            el.src = cmsData[key];
+                        } else {
+                            el.innerHTML = cmsData[key];
+                        }
                     }
                 });
             }

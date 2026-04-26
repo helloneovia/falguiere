@@ -63,62 +63,6 @@
         </div>
 
         <div class="dashboard-grid">
-            <!-- CMS Editor -->
-            <div class="admin-card">
-                <h2>
-                    <span>✏️ Éditeur de Site (CMS)</span>
-                    <button class="btn btn-primary" onclick="saveCMS()">Enregistrer le site</button>
-                </h2>
-                <p style="margin-bottom: 2rem; font-size: 0.9rem; color: var(--dark-muted);">Modifiez les textes du site ci-dessous. Les changements s'appliqueront immédiatement sur l'accueil.</p>
-                
-                <form id="cmsForm">
-                    <div class="cms-field">
-                        <label>Badge de l'en-tête</label>
-                        <input type="text" id="cms-hero-badge" placeholder="Paris 15e">
-                    </div>
-                    <div class="cms-field">
-                        <label>Titre principal (HTML autorisé, ex: &lt;span class="text-gradient"&gt;Quartier&lt;/span&gt;)</label>
-                        <input type="text" id="cms-hero-title">
-                    </div>
-                    <div class="cms-field">
-                        <label>Description sous le titre principal</label>
-                        <textarea id="cms-hero-desc" rows="3"></textarea>
-                    </div>
-                    <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e2e8f0;">
-                    
-                    <div class="cms-field">
-                        <label>Titre de la section Mission</label>
-                        <input type="text" id="cms-mission-title">
-                    </div>
-                    <div class="cms-field">
-                        <label>Introduction de la mission (Gras)</label>
-                        <textarea id="cms-mission-lead" rows="2"></textarea>
-                    </div>
-                    <div class="cms-field">
-                        <label>Description de la mission</label>
-                        <textarea id="cms-mission-desc" rows="3"></textarea>
-                    </div>
-                    <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e2e8f0;">
-                    
-                    <div class="cms-field">
-                        <label>Titre de la section Vie Asso</label>
-                        <input type="text" id="cms-asso-title">
-                    </div>
-                    <div class="cms-field">
-                        <label>Introduction Vie Asso (Gras)</label>
-                        <textarea id="cms-asso-lead" rows="2"></textarea>
-                    </div>
-                    <div class="cms-field">
-                        <label>Description Vie Asso</label>
-                        <textarea id="cms-asso-desc" rows="3"></textarea>
-                    </div>
-                    <div class="cms-field">
-                        <label>Citation inspirante</label>
-                        <textarea id="cms-asso-quote" rows="2"></textarea>
-                    </div>
-                </form>
-            </div>
-
             <!-- Adhésions -->
             <div class="admin-card">
                 <h2>
@@ -162,6 +106,19 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            <!-- CMS Editor -->
+            <div class="admin-card">
+                <h2>
+                    <span>✏️ Éditeur de Site Complet (CMS)</span>
+                    <button class="btn btn-primary" onclick="saveCMS()">Enregistrer le site</button>
+                </h2>
+                <p style="margin-bottom: 2rem; font-size: 0.9rem; color: var(--dark-muted);">Modifiez les textes et les images du site ci-dessous. Les changements s'appliqueront immédiatement sur l'accueil.</p>
+                
+                <form id="cmsForm">
+                    <!-- Fields dynamically injected by JS -->
+                </form>
             </div>
         </div>
     </div>
@@ -265,6 +222,57 @@
         }
 
         // --- CMS Logic ---
+        const cmsFieldsConfig = [
+            { id: 'hero-img', label: 'Image de fond Accueil (URL)', type: 'text', default: 'assets/background-photo.jpg' },
+            { id: 'hero-badge', label: 'Badge de l\\'en-tête', type: 'text', default: 'Paris 15e' },
+            { id: 'hero-title', label: 'Titre principal', type: 'text', default: 'Ensemble pour notre<br><span class="text-gradient">Quartier</span>' },
+            { id: 'hero-desc', label: 'Description sous le titre', type: 'textarea', default: `L'Association Falguière s'engage au quotidien pour aider le quartier à se développer, recréer du lien social et lutter contre la précarité.` },
+            
+            { id: 'mission-title', label: 'Titre Mission', type: 'text', default: `Plus qu'un quartier,<br>une <span class="text-accent">communauté</span>.` },
+            { id: 'mission-lead', label: 'Intro Mission', type: 'textarea', default: `Le quartier Falguière a du potentiel. Notre mission est de l'aider à sortir de la promiscuité et d'offrir de nouvelles perspectives à ses habitants.` },
+            { id: 'mission-desc', label: 'Desc Mission', type: 'textarea', default: `À travers l'entraide, l'écoute et l'action de terrain, nous luttons contre l'isolement et la pauvreté. Nous croyons en un avenir meilleur, construit par et pour les résidents du 15ème arrondissement.` },
+            
+            { id: 'stat-1-num', label: 'Stat 1 Chiffre', type: 'text', default: '6400+' },
+            { id: 'stat-1-label', label: 'Stat 1 Texte', type: 'text', default: 'Habitants dans le quartier' },
+            { id: 'stat-2-num', label: 'Stat 2 Chiffre', type: 'text', default: '100%' },
+            { id: 'stat-2-label', label: 'Stat 2 Texte', type: 'text', default: 'D\\'engagement solidaire' },
+
+            { id: 'action-1-icon', label: 'Action 1 Icon', type: 'text', default: '🤝' },
+            { id: 'action-1-title', label: 'Action 1 Titre', type: 'text', default: 'Journées Solidaires' },
+            { id: 'action-1-desc', label: 'Action 1 Desc', type: 'textarea', default: 'Organisation régulière de distributions de nourriture et de vêtements pour aider les familles en difficulté.' },
+            { id: 'action-2-icon', label: 'Action 2 Icon', type: 'text', default: '📚' },
+            { id: 'action-2-title', label: 'Action 2 Titre', type: 'text', default: 'Soutien Scolaire' },
+            { id: 'action-2-desc', label: 'Action 2 Desc', type: 'textarea', default: 'Accompagnement des jeunes du quartier pour favoriser leur réussite éducative et leur épanouissement.' },
+            { id: 'action-3-icon', label: 'Action 3 Icon', type: 'text', default: '🌱' },
+            { id: 'action-3-title', label: 'Action 3 Titre', type: 'text', default: 'Développement Local' },
+            { id: 'action-3-desc', label: 'Action 3 Desc', type: 'textarea', default: 'Initiatives pour améliorer le cadre de vie, végétaliser nos espaces et renforcer la sécurité communautaire.' },
+
+            { id: 'asso-title', label: 'Titre Vie Asso', type: 'text', default: `Une association <span class="text-accent">par et pour</span> les habitants` },
+            { id: 'asso-lead', label: 'Intro Vie Asso', type: 'textarea', default: `Chaque jour, de nouveaux membres nous rejoignent pour donner vie au quartier Falguière.` },
+
+            { id: 'galerie-1-img', label: 'Galerie 1 Image (URL)', type: 'text', default: 'assets/galerie-1.jpg' },
+            { id: 'galerie-1-title', label: 'Galerie 1 Titre', type: 'text', default: 'La Cité Maillol' },
+            { id: 'galerie-1-desc', label: 'Galerie 1 Desc', type: 'textarea', default: 'Falguière est un grand quartier du 15ème arrondissement. Son nom officiel est la « cité Maillol » car le centre névralgique de la cité se trouve dans l\\'ensemble Falguière / Maillol.' },
+            
+            { id: 'galerie-2-img', label: 'Galerie 2 Image (URL)', type: 'text', default: 'assets/galerie-2.jpg' },
+            { id: 'galerie-2-title', label: 'Galerie 2 Titre', type: 'text', default: 'Un quartier prioritaire' },
+            { id: 'galerie-2-desc', label: 'Galerie 2 Desc', type: 'textarea', default: 'Falguière fait partie des deux quartiers du 15ème arrondissement à être classés en Quartier Prioritaire de la Politique de la Ville (QPV) en 2024.' },
+            
+            { id: 'galerie-3-img', label: 'Galerie 3 Image (URL)', type: 'text', default: 'assets/galerie-3.jpg' },
+            { id: 'galerie-3-title', label: 'Galerie 3 Titre', type: 'text', default: 'Lutte contre la précarité' },
+            { id: 'galerie-3-desc', label: 'Galerie 3 Desc', type: 'textarea', default: 'En 2024, Falguière est le quartier le plus pauvre de Paris avec un taux de pauvreté de 55%. Notre association agit au quotidien pour y faire face et créer de la solidarité.' },
+
+            { id: 'galerie-4-img', label: 'Galerie 4 Image (URL)', type: 'text', default: 'assets/galerie-4.jpg' },
+            { id: 'galerie-4-title', label: 'Galerie 4 Titre', type: 'text', default: 'Une histoire riche' },
+            { id: 'galerie-4-desc', label: 'Galerie 4 Desc', type: 'textarea', default: 'La rue et le quartier doivent leur nom actuel au peintre et sculpteur Alexandre Falguière (1831-1900). Nous perpétuons cette histoire à travers nos actions sur le terrain.' },
+
+            { id: 'galerie-5-img', label: 'Galerie 5 Image (URL)', type: 'text', default: 'assets/galerie-5.jpg' },
+            { id: 'galerie-5-title', label: 'Galerie 5 Titre', type: 'text', default: 'Notre engagement' },
+            { id: 'galerie-5-desc', label: 'Galerie 5 Desc', type: 'textarea', default: 'Notre force réside dans la diversité et l\\'engagement de nos bénévoles. Que vous ayez quelques heures ou plusieurs jours à consacrer, chaque aide compte pour animer notre quartier.' },
+
+            { id: 'footer-desc', label: 'Footer Description', type: 'textarea', default: 'L\\'association pour le développement et la solidarité du quartier Falguière à Paris 15e.' }
+        ];
+
         async function initCMS() {
             try {
                 const response = await fetch('/api/cms');
@@ -273,37 +281,38 @@
                     cmsData = await response.json();
                 }
                 
-                // Default values if empty
-                document.getElementById('cms-hero-badge').value = cmsData['hero-badge'] || 'Paris 15e';
-                document.getElementById('cms-hero-title').value = cmsData['hero-title'] || 'Ensemble pour notre<br><span class="text-gradient">Quartier</span>';
-                document.getElementById('cms-hero-desc').value = cmsData['hero-desc'] || "L'Association Falguière s'engage au quotidien pour aider le quartier à se développer, recréer du lien social et lutter contre la précarité.";
+                const form = document.getElementById('cmsForm');
+                form.innerHTML = ''; // Clear existing
                 
-                document.getElementById('cms-mission-title').value = cmsData['mission-title'] || `Plus qu'un quartier,<br>une <span class="text-accent">communauté</span>.`;
-                document.getElementById('cms-mission-lead').value = cmsData['mission-lead'] || `Le quartier Falguière a du potentiel. Notre mission est de l'aider à sortir de la promiscuité et d'offrir de nouvelles perspectives à ses habitants.`;
-                document.getElementById('cms-mission-desc').value = cmsData['mission-desc'] || `À travers l'entraide, l'écoute et l'action de terrain, nous luttons contre l'isolement et la pauvreté. Nous croyons en un avenir meilleur, construit par et pour les résidents du 15ème arrondissement.`;
-                
-                document.getElementById('cms-asso-title').value = cmsData['asso-title'] || `Une association <span class="text-accent">par et pour</span> les habitants`;
-                document.getElementById('cms-asso-lead').value = cmsData['asso-lead'] || `Chaque jour, de nouveaux membres nous rejoignent pour donner vie au quartier Falguière.`;
-                document.getElementById('cms-asso-desc').value = cmsData['asso-desc'] || `Notre force réside dans la diversité et l'engagement de nos bénévoles. Que vous ayez quelques heures par mois ou plusieurs jours par semaine à consacrer, chaque aide compte. Ensemble, nous créons des événements, entretenons nos jardins partagés, et aidons les plus démunis dans un esprit de fraternité.`;
-                document.getElementById('cms-asso-quote').value = cmsData['asso-quote'] || `<p style="font-style: italic; margin-bottom: 0;">"Rejoindre l'association, c'est participer à la construction d'un quotidien plus chaleureux. Les images de notre galerie parlent d'elles-mêmes : le partage et l'entraide sont au cœur de nos actions."</p>`;
+                cmsFieldsConfig.forEach(field => {
+                    const value = cmsData[field.id] || field.default;
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'cms-field';
+                    
+                    if (field.type === 'textarea') {
+                        wrapper.innerHTML = `
+                            <label>${field.label}</label>
+                            <textarea id="cms-${field.id}" rows="3">${value}</textarea>
+                        `;
+                    } else {
+                        wrapper.innerHTML = `
+                            <label>${field.label}</label>
+                            <input type="${field.type}" id="cms-${field.id}" value="${value.replace(/"/g, '&quot;')}">
+                        `;
+                    }
+                    form.appendChild(wrapper);
+                });
             } catch (err) {
                 console.error('Error loading CMS data:', err);
             }
         }
 
         async function saveCMS() {
-            const cmsData = {
-                'hero-badge': document.getElementById('cms-hero-badge').value,
-                'hero-title': document.getElementById('cms-hero-title').value,
-                'hero-desc': document.getElementById('cms-hero-desc').value,
-                'mission-title': document.getElementById('cms-mission-title').value,
-                'mission-lead': document.getElementById('cms-mission-lead').value,
-                'mission-desc': document.getElementById('cms-mission-desc').value,
-                'asso-title': document.getElementById('cms-asso-title').value,
-                'asso-lead': document.getElementById('cms-asso-lead').value,
-                'asso-desc': document.getElementById('cms-asso-desc').value,
-                'asso-quote': document.getElementById('cms-asso-quote').value
-            };
+            const cmsData = {};
+            cmsFieldsConfig.forEach(field => {
+                const el = document.getElementById(`cms-${field.id}`);
+                if (el) cmsData[field.id] = el.value;
+            });
             
             const btn = document.querySelector('button[onclick="saveCMS()"]');
             const originalText = btn.textContent;
