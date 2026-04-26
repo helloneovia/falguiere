@@ -400,6 +400,12 @@ ul {
     padding: 3rem;
 }
 
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
 .image-card {
     position: relative;
     background: linear-gradient(135deg, var(--primary) 0%, #ff9e6d 100%);
@@ -561,6 +567,7 @@ ul {
 
 .form-group input,
 .form-group textarea {
+    width: 100%;
     padding: 1rem;
     border: 1px solid #e2e8f0;
     border-radius: var(--radius-md);
@@ -648,6 +655,10 @@ ul {
 }
 
 @media (max-width: 768px) {
+    .glass-card {
+        padding: 1.5rem;
+    }
+    
     .nav-links {
         display: none;
     }
@@ -667,6 +678,12 @@ ul {
     
     .hero-buttons .btn {
         width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .form-grid {
+        grid-template-columns: 1fr;
     }
 }
 
