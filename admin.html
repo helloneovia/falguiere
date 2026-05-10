@@ -93,6 +93,7 @@
                 <li><a onclick="switchTab('subscribers')" id="nav-subscribers">👥 Abonnés</a></li>
                 <li><a onclick="switchTab('cms')" id="nav-cms">✏️ Éditeur de Site</a></li>
                 <li><a onclick="switchTab('settings')" id="nav-settings">⚙️ Paramètres API</a></li>
+                <li style="margin-top: 2rem;"><a onclick="logout()" id="nav-logout" style="color: #ef4444; cursor: pointer;">🚪 Déconnexion</a></li>
             </ul>
             <div style="margin-top: auto;">
                 <a href="index.html" class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3); width: 100%;">Retour au site</a>
@@ -353,6 +354,11 @@
             document.querySelectorAll('.admin-nav a').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tabId).classList.add('active');
             document.getElementById('nav-' + tabId).classList.add('active');
+        }
+
+        function logout() {
+            sessionStorage.removeItem('admin_auth');
+            location.reload();
         }
 
         function unlockAdmin() {
@@ -939,7 +945,8 @@
             { id: 'galerie-5-title', label: 'Galerie 5 Titre', type: 'text', default: 'Notre engagement' },
             { id: 'galerie-5-desc', label: 'Galerie 5 Desc', type: 'textarea', default: `Notre force réside dans la diversité et l'engagement de nos bénévoles. Que vous ayez quelques heures ou plusieurs jours à consacrer, chaque aide compte pour animer notre quartier.` },
 
-            // Settings\n            { id: 'mailjet_api_key', label: 'Clé API Publique Mailjet', type: 'text', default: '' },
+            // Settings
+            { id: 'mailjet_api_key', label: 'Clé API Publique Mailjet', type: 'text', default: '' },
             { id: 'mailjet_api_secret', label: 'Clé Secrète Mailjet', type: 'text', default: '' },
             { id: 'mailjet_sender_email', label: 'Email Expéditeur Mailjet (vérifié)', type: 'text', default: 'contact@falguiere.org' },
             { id: 'mailjet_sender_name', label: 'Nom Expéditeur Mailjet', type: 'text', default: 'Association Falguière' },
