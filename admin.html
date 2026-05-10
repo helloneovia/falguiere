@@ -524,7 +524,7 @@
             const btn = document.getElementById('bulkDeleteBtn');
             if (btn) {
                 btn.style.display = checkboxes.length > 0 ? 'inline-block' : 'none';
-                btn.textContent = \`Supprimer la sélection (\${checkboxes.length})\`;
+                btn.textContent = `Supprimer la sélection (${checkboxes.length})`;
             }
             const selectAll = document.getElementById('selectAllDocs');
             if (selectAll) {
@@ -537,7 +537,7 @@
             const checkboxes = document.querySelectorAll('.doc-checkbox:checked');
             if (checkboxes.length === 0) return;
             
-            if (confirm(\`Êtes-vous sûr de vouloir supprimer ces \${checkboxes.length} documents ? Cette action est irréversible.\`)) {
+            if (confirm(`Êtes-vous sûr de vouloir supprimer ces ${checkboxes.length} documents ? Cette action est irréversible.`)) {
                 const ids = Array.from(checkboxes).map(cb => parseInt(cb.value));
                 try {
                     const response = await fetch('/api/documents/bulk-delete', {
