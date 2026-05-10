@@ -460,7 +460,7 @@ app.delete('/api/newsletters/:id', async (req, res) => {
 app.post('/api/newsletters/:id/send', async (req, res) => {
   try {
     const { id } = req.params;
-    const { testEmail } = req.body;
+    const { testEmail, selectedEmails } = req.body;
     
     const nlResult = await pool.query("SELECT * FROM newsletters WHERE id = $1", [id]);
     if (nlResult.rows.length === 0) return res.status(404).json({ error: 'Newsletter non trouvée' });
@@ -479,6 +479,10 @@ app.post('/api/newsletters/:id/send', async (req, res) => {
     let recipients = [];
     if (testEmail) {
       recipients = [{ Email: testEmail, Name: 'Test' }];
+    } else if (selectedEmails && selectedEmails.length > 0) {
+      const subResult = await pool.query("SELECT email, name FROM subscribers WHERE email = ANY($1)", [selectedEmails]);
+      if (subResult.rows.length === 0) return res.status(400).json({ error: "Aucun abonné valide trouvé dans la sélection." });
+      recipients = subResult.rows.map(sub => ({ Email: sub.email, Name: sub.name || '' }));
     } else {
       const subResult = await pool.query("SELECT email, name FROM subscribers WHERE status = 'actif'");
       if (subResult.rows.length === 0) return res.status(400).json({ error: "Aucun abonné actif." });
