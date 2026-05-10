@@ -8,6 +8,12 @@ const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Ensure uploads directory exists
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
+
 // Middleware
 app.use(cors());
 app.use(express.json());
