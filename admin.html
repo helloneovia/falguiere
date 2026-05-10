@@ -614,12 +614,21 @@
         }
 
         // --- Newsletters Logic ---
-        function openNewsletterForm(id = null, subject = '', content = '') {
+        let globalNewsletters = [];
+
+        function openNewsletterForm(id = null) {
             document.getElementById('newsletterFormContainer').style.display = 'block';
             document.getElementById('nlFormTitle').textContent = id ? 'Modifier la Newsletter' : 'Créer une Newsletter';
             document.getElementById('nlId').value = id || '';
-            document.getElementById('nlSubject').value = subject;
-            document.getElementById('nlContent').value = content;
+            
+            if (id) {
+                const item = globalNewsletters.find(n => n.id === id);
+                document.getElementById('nlSubject').value = item ? item.subject : '';
+                document.getElementById('nlContent').value = item ? item.content : '';
+            } else {
+                document.getElementById('nlSubject').value = '';
+                document.getElementById('nlContent').value = '';
+            }
         }
 
         function closeNewsletterForm() {
@@ -631,6 +640,7 @@
             try {
                 const response = await fetch('/api/newsletters');
                 const data = await response.json();
+                globalNewsletters = data;
                 
                 if (data.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Aucune newsletter.</td></tr>';
@@ -648,7 +658,7 @@
                         <td><span class="badge-date">${item.sent_at ? formatDate(item.sent_at) : formatDate(item.date)}</span></td>
                         <td>
                             ${item.status !== 'envoyé' ? `
-                                <button class="btn-sm" style="background:var(--dark-muted);color:white;border:none;cursor:pointer;" onclick="openNewsletterForm(${item.id}, \`${item.subject.replace(/'/g, "\\'")}\`, \`${item.content.replace(/`/g, "\\`").replace(/'/g, "\\'")}\`)">Modifier</button>
+                                <button class="btn-sm" style="background:var(--dark-muted);color:white;border:none;cursor:pointer;" onclick="openNewsletterForm(${item.id})">Modifier</button>
                                 <button class="btn-sm" style="background:var(--primary);color:white;border:none;cursor:pointer;" onclick="sendNewsletter(${item.id})">Envoyer</button>
                             ` : `
                                 <button class="btn-sm" style="background:#3b82f6;color:white;border:none;cursor:pointer;" onclick="showNewsletterStats(${item.id})">Statistiques</button>
