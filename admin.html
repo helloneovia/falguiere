@@ -83,11 +83,15 @@
         @media (max-width: 768px) {
             .admin-card h2 { flex-direction: column; align-items: flex-start; gap: 1rem; }
             .admin-card h2 button { width: 100%; }
-            .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; display: block; border-radius: var(--radius-md); }
             
-            /* Table text cutoff fix */
-            td, th { white-space: normal; word-break: break-word; min-width: 120px; }
-            td:last-child { min-width: 150px; }
+            /* Card-like tables for mobile */
+            .table-responsive { width: 100%; overflow: visible; display: block; border-radius: 0; background: transparent; }
+            table, thead, tbody, th, td, tr { display: block; width: 100%; box-sizing: border-box; }
+            thead tr { display: none; } /* Hide headers */
+            tr { border: 1px solid #e2e8f0; border-radius: var(--radius-md); margin-bottom: 1.5rem; background: var(--white); overflow: hidden; padding-bottom: 0.5rem; }
+            td { border: none; border-bottom: 1px solid #f1f5f9; position: relative; padding: 0.75rem 1rem 0.75rem 40%; min-height: 2.5rem; white-space: normal; word-break: break-word; text-align: left; }
+            td:last-child { border-bottom: none; }
+            td::before { content: attr(data-label); position: absolute; left: 1rem; top: 0.75rem; width: 30%; padding-right: 10px; font-weight: 600; color: var(--dark-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; }
             
             .cms-field input, .cms-field textarea { font-size: 16px; } /* prevent iOS zoom */
             
@@ -97,7 +101,8 @@
             .upload-btn-container button { width: 100%; white-space: normal; height: auto; padding: 1rem; }
             
             .btn-sm { padding: 0.6rem 1rem; font-size: 1rem; margin-bottom: 0.5rem; display: block; width: 100%; text-align: center; white-space: normal; }
-            td .btn-sm { display: inline-block; width: auto; margin-bottom: 0; }
+            td .btn-sm { display: block; width: 100%; margin-bottom: 0.5rem; box-sizing: border-box; }
+            td .btn-sm:last-child { margin-bottom: 0; }
         }
     </style>
 </head>
@@ -459,9 +464,9 @@
 
                 tbody.innerHTML = data.map(item => `
                     <tr>
-                        <td><span class="badge-date">${formatDate(item.date)}</span></td>
-                        <td><strong>${item.name}</strong></td>
-                        <td>
+                        <td data-label="Date"><span class="badge-date">${formatDate(item.date)}</span></td>
+                        <td data-label="Nom"><strong>${item.name}</strong></td>
+                        <td data-label="Contact">
                             <a href="mailto:${item.email}" class="text-accent">${item.email}</a><br>
                             <span style="font-size:0.9em; color:#666;">${item.phone || 'Non renseigné'}</span>
                         </td>
@@ -487,10 +492,10 @@
 
                 tbody.innerHTML = data.map(item => `
                     <tr>
-                        <td><span class="badge-date">${formatDate(item.date)}</span></td>
-                        <td><strong>${item.name}</strong></td>
-                        <td><a href="mailto:${item.email}" class="text-accent">${item.email}</a></td>
-                        <td style="max-width: 400px; white-space: pre-wrap;">${item.message}</td>
+                        <td data-label="Date"><span class="badge-date">${formatDate(item.date)}</span></td>
+                        <td data-label="Expéditeur"><strong>${item.name}</strong></td>
+                        <td data-label="Email"><a href="mailto:${item.email}" class="text-accent">${item.email}</a></td>
+                        <td data-label="Message" style="max-width: 400px; white-space: pre-wrap;">${item.message}</td>
                     </tr>
                 `).join('');
             } catch (err) {
@@ -536,11 +541,11 @@
 
                 tbody.innerHTML = data.map(item => `
                     <tr>
-                        <td><input type="checkbox" class="doc-checkbox" value="${item.id}" onchange="updateBulkDeleteBtn()"></td>
-                        <td><span class="badge-date">${formatDate(item.date)}</span></td>
-                        <td><strong>${item.name}</strong></td>
-                        <td>${formatBytes(item.size)}</td>
-                        <td>
+                        <td data-label="Sélection"><input type="checkbox" class="doc-checkbox" value="${item.id}" onchange="updateBulkDeleteBtn()"></td>
+                        <td data-label="Date"><span class="badge-date">${formatDate(item.date)}</span></td>
+                        <td data-label="Nom"><strong>${item.name}</strong></td>
+                        <td data-label="Taille">${formatBytes(item.size)}</td>
+                        <td data-label="Actions">
                             <a href="/api/documents/${item.id}/view" target="_blank" class="btn-sm" style="background: var(--dark-muted); color: white; text-decoration: none; display: inline-block; margin-right: 0.5rem;">Visualiser</a>
                             <a href="/api/documents/${item.id}/download" target="_blank" class="btn-sm" style="background: var(--primary); color: white; text-decoration: none; display: inline-block; margin-right: 0.5rem;">Télécharger</a>
                             <button class="btn-sm btn-danger" onclick="deleteDocument(${item.id})">Supprimer</button>
@@ -674,15 +679,15 @@
 
                 tbody.innerHTML = data.map(item => `
                     <tr>
-                        <td><span class="badge-date">${formatDate(item.date)}</span></td>
-                        <td><strong>${item.email}</strong></td>
-                        <td>${item.name || '-'}</td>
-                        <td>
+                        <td data-label="Date"><span class="badge-date">${formatDate(item.date)}</span></td>
+                        <td data-label="Email"><strong>${item.email}</strong></td>
+                        <td data-label="Nom">${item.name || '-'}</td>
+                        <td data-label="Statut">
                             <span style="padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; background: ${item.status === 'actif' ? '#dcfce7; color: #166534' : '#fee2e2; color: #991b1b'};">
                                 ${item.status === 'actif' ? 'Actif' : 'Désabonné'}
                             </span>
                         </td>
-                        <td>
+                        <td data-label="Actions">
                             <button class="btn-sm btn-danger" onclick="deleteSubscriber(${item.id})">Supprimer</button>
                         </td>
                     </tr>
@@ -755,14 +760,14 @@
 
                 tbody.innerHTML = data.map(item => `
                     <tr>
-                        <td><strong>${item.subject}</strong></td>
-                        <td>
+                        <td data-label="Sujet"><strong>${item.subject}</strong></td>
+                        <td data-label="Statut">
                             <span style="padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; background: ${item.status === 'envoyé' ? '#dcfce7; color: #166534' : '#f1f5f9; color: #475569'};">
                                 ${item.status === 'envoyé' ? 'Envoyé' : 'Brouillon'}
                             </span>
                         </td>
-                        <td><span class="badge-date">${item.sent_at ? formatDate(item.sent_at) : formatDate(item.date)}</span></td>
-                        <td>
+                        <td data-label="Date / Envoi"><span class="badge-date">${item.sent_at ? formatDate(item.sent_at) : formatDate(item.date)}</span></td>
+                        <td data-label="Actions">
                             ${item.status !== 'envoyé' ? `
                                 <button class="btn-sm" style="background:var(--dark-muted);color:white;border:none;cursor:pointer;" onclick="openNewsletterForm(${item.id})">Modifier</button>
                                 <button class="btn-sm" style="background:var(--primary);color:white;border:none;cursor:pointer;" onclick="sendNewsletter(${item.id})">Envoyer</button>
