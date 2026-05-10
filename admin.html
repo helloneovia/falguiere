@@ -37,17 +37,46 @@
         .login-box h2 { margin-bottom: 1.5rem; }
         .login-box input { width: 100%; padding: 1rem; text-align: center; font-size: 1.2rem; letter-spacing: 5px; margin-bottom: 1rem; border: 2px solid #e2e8f0; border-radius: var(--radius-md); }
         .error-msg { color: #ef4444; font-size: 0.9rem; margin-bottom: 1rem; display: none; }
+        
+        /* Digicode Styles */
+        .login-box.digicode-mode { background: transparent; box-shadow: none; padding: 0; width: auto; }
+        .digicode-container { background: #2a2a2a; padding: 2.5rem 2rem; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 2px 5px rgba(255,255,255,0.1); border: 2px solid #1a1a1a; width: 320px; margin: 0 auto; position: relative; }
+        .digicode-container::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 10px; background: linear-gradient(to bottom, rgba(255,255,255,0.1), transparent); border-radius: 10px 10px 0 0; }
+        .digicode-brand { color: #888; font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 1rem; text-align: center; font-weight: bold; }
+        .digicode-screen { background: #111; border: 3px solid #000; border-radius: 6px; height: 60px; margin-bottom: 2rem; display: flex; justify-content: center; align-items: center; color: #ff3333; font-family: 'Courier New', Courier, monospace; font-size: 2.5rem; letter-spacing: 8px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); transition: all 0.3s ease; }
+        .digicode-screen.error { color: #ff3333; animation: shake 0.4s ease-in-out; }
+        .digicode-screen.success { color: #33ff33; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+        .digicode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .digicode-btn { background: linear-gradient(135deg, #444, #222); border: 2px solid #111; border-radius: 50%; width: 65px; height: 65px; color: white; font-size: 1.5rem; font-weight: bold; cursor: pointer; box-shadow: 0 5px 10px rgba(0,0,0,0.4), inset 0 2px 2px rgba(255,255,255,0.2); display: flex; justify-content: center; align-items: center; margin: 0 auto; transition: all 0.1s; user-select: none; }
+        .digicode-btn:active { transform: translateY(4px); box-shadow: 0 1px 2px rgba(0,0,0,0.4), inset 0 2px 5px rgba(0,0,0,0.6); }
+        .digicode-btn.btn-action { font-size: 1.2rem; }
+        .digicode-btn.btn-clear { color: #ff5555; }
+        .digicode-btn.btn-val { color: #55ff55; }
     </style>
 </head>
 <body>
     <!-- Login Overlay -->
     <div id="loginOverlay">
-        <div class="login-box">
-            <h2>Accès Sécurisé</h2>
-            <p style="margin-bottom: 1rem; color: var(--dark-muted);">Veuillez entrer le mot de passe pour accéder à l'administration.</p>
-            <input type="password" id="adminPwd" placeholder="•••••" onkeypress="if(event.key === 'Enter') checkPassword()">
-            <div id="loginError" class="error-msg">Mot de passe incorrect</div>
-            <button class="btn btn-primary w-full" onclick="checkPassword()">Déverrouiller</button>
+        <div class="login-box digicode-mode">
+            <div class="digicode-container">
+                <div class="digicode-brand">FALGUIÈRE SECURE</div>
+                <div id="digicodeScreen" class="digicode-screen"></div>
+                <div class="digicode-grid">
+                    <button class="digicode-btn" onclick="pressDigit(1)">1</button>
+                    <button class="digicode-btn" onclick="pressDigit(2)">2</button>
+                    <button class="digicode-btn" onclick="pressDigit(3)">3</button>
+                    <button class="digicode-btn" onclick="pressDigit(4)">4</button>
+                    <button class="digicode-btn" onclick="pressDigit(5)">5</button>
+                    <button class="digicode-btn" onclick="pressDigit(6)">6</button>
+                    <button class="digicode-btn" onclick="pressDigit(7)">7</button>
+                    <button class="digicode-btn" onclick="pressDigit(8)">8</button>
+                    <button class="digicode-btn" onclick="pressDigit(9)">9</button>
+                    <button class="digicode-btn btn-action btn-clear" onclick="clearDigicode()">C</button>
+                    <button class="digicode-btn" onclick="pressDigit(0)">0</button>
+                    <button class="digicode-btn btn-action btn-val" onclick="validateDigicode()">V</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -161,16 +190,56 @@
     </div>
 
     <script>
-        // --- Security / Login ---
-        function checkPassword() {
-            const pwd = document.getElementById('adminPwd').value;
-            if (pwd === '75015') {
-                sessionStorage.setItem('admin_auth', 'true');
-                unlockAdmin();
-            } else {
-                document.getElementById('loginError').style.display = 'block';
+        // --- Security / Login (Digicode) ---
+        let currentCode = '';
+
+        function pressDigit(digit) {
+            if (currentCode.length < 5) {
+                currentCode += digit;
+                updateDigicodeScreen();
             }
         }
+
+        function clearDigicode() {
+            currentCode = '';
+            updateDigicodeScreen();
+            document.getElementById('digicodeScreen').className = 'digicode-screen';
+        }
+
+        function updateDigicodeScreen() {
+            const screen = document.getElementById('digicodeScreen');
+            screen.textContent = '*'.repeat(currentCode.length);
+            screen.className = 'digicode-screen';
+        }
+
+        function validateDigicode() {
+            const screen = document.getElementById('digicodeScreen');
+            if (currentCode === '75015') {
+                screen.classList.add('success');
+                setTimeout(() => {
+                    sessionStorage.setItem('admin_auth', 'true');
+                    unlockAdmin();
+                }, 500);
+            } else {
+                screen.classList.add('error');
+                setTimeout(() => {
+                    clearDigicode();
+                }, 600);
+            }
+        }
+
+        // Support keyboard input
+        document.addEventListener('keydown', function(e) {
+            if (document.getElementById('loginOverlay').style.display !== 'none') {
+                if (e.key >= '0' && e.key <= '9') {
+                    pressDigit(e.key);
+                } else if (e.key === 'Backspace' || e.key.toLowerCase() === 'c') {
+                    clearDigicode();
+                } else if (e.key === 'Enter' || e.key.toLowerCase() === 'v') {
+                    validateDigicode();
+                }
+            }
+        });
 
         function unlockAdmin() {
             document.getElementById('loginOverlay').style.display = 'none';
