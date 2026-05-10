@@ -256,6 +256,30 @@ app.delete('/api/documents/:id', async (req, res) => {
   }
 });
 
+app.get('/api/documents/:id/download', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const docResult = await pool.query('SELECT filename, name FROM documents WHERE id = $1', [id]);
+    
+    if (docResult.rows.length === 0) {
+      return res.status(404).send('Document introuvable dans la base de données.');
+    }
+    
+    const { filename, name } = docResult.rows[0];
+    const filePath = path.join(__dirname, 'uploads', filename);
+    
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).send("Le fichier physique est introuvable sur le serveur. Il a probablement été perdu lors d'un redéploiement (absence de volume persistant).");
+    }
+    
+    // Send file and force download with the original name
+    res.download(filePath, name);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Erreur serveur');
+  }
+});
+
 // Fallback to serve index.html for unknown routes (SPA like behavior)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));

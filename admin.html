@@ -354,7 +354,7 @@
                         <td><strong>${item.name}</strong></td>
                         <td>${formatBytes(item.size)}</td>
                         <td>
-                            <a href="/uploads/${item.filename}" target="_blank" class="btn-sm" style="background: var(--primary); color: white; text-decoration: none; display: inline-block; margin-right: 0.5rem;">Télécharger</a>
+                            <a href="/api/documents/${item.id}/download" target="_blank" class="btn-sm" style="background: var(--primary); color: white; text-decoration: none; display: inline-block; margin-right: 0.5rem;">Télécharger</a>
                             <button class="btn-sm btn-danger" onclick="deleteDocument(${item.id})">Supprimer</button>
                         </td>
                     </tr>
