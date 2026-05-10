@@ -176,6 +176,80 @@
                 </div>
             </div>
 
+            <!-- Abonnés Newsletter -->
+            <div class="admin-card">
+                <h2>
+                    <span>👥 Abonnés Newsletter</span>
+                </h2>
+                <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: flex-end;">
+                    <div style="flex: 1;">
+                        <input type="email" id="newSubEmail" placeholder="Adresse email" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: var(--radius-md);">
+                    </div>
+                    <div style="flex: 1;">
+                        <input type="text" id="newSubName" placeholder="Nom (Optionnel)" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: var(--radius-md);">
+                    </div>
+                    <button class="btn btn-primary" onclick="addSubscriber()" style="padding: 0.75rem 1.5rem;">Ajouter</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Email</th>
+                                <th>Nom</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subscribersTableBody">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Campagnes Newsletter -->
+            <div class="admin-card">
+                <h2>
+                    <span>📰 Campagnes Newsletter</span>
+                    <button class="btn btn-primary" onclick="openNewsletterForm()">+ Nouvelle Campagne</button>
+                </h2>
+                
+                <!-- Formulaire Création/Edition (caché par défaut) -->
+                <div id="newsletterFormContainer" style="display: none; background: #f8fafc; padding: 1.5rem; border-radius: var(--radius-md); margin-bottom: 2rem; border: 1px solid #e2e8f0;">
+                    <h3 style="margin-top:0; margin-bottom: 1rem;" id="nlFormTitle">Créer une Newsletter</h3>
+                    <input type="hidden" id="nlId">
+                    <div class="cms-field">
+                        <label>Sujet de l'email</label>
+                        <input type="text" id="nlSubject" placeholder="Ex: Les actualités de Falguière">
+                    </div>
+                    <div class="cms-field">
+                        <label>Contenu HTML</label>
+                        <textarea id="nlContent" rows="10" placeholder="<h1>Bonjour,</h1><p>Voici les news...</p>" style="font-family: monospace;"></textarea>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-primary" onclick="saveNewsletter()">Enregistrer le brouillon</button>
+                        <button class="btn btn-outline" onclick="closeNewsletterForm()" style="color: var(--dark-muted); border-color: #cbd5e1;">Annuler</button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Sujet</th>
+                                <th>Statut</th>
+                                <th>Date / Envoi</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="newslettersTableBody">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- CMS Editor -->
             <div class="admin-card">
                 <h2>
@@ -250,6 +324,8 @@
             renderAdhesions();
             renderMessages();
             renderDocuments();
+            renderSubscribers();
+            renderNewsletters();
         }
 
         // Check on load
@@ -478,6 +554,203 @@
             }
         }
 
+        // --- Subscribers Logic ---
+        async function renderSubscribers() {
+            const tbody = document.getElementById('subscribersTableBody');
+            try {
+                const response = await fetch('/api/subscribers');
+                const data = await response.json();
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Aucun abonné.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.map(item => `
+                    <tr>
+                        <td><span class="badge-date">${formatDate(item.date)}</span></td>
+                        <td><strong>${item.email}</strong></td>
+                        <td>${item.name || '-'}</td>
+                        <td>
+                            <span style="padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; background: ${item.status === 'actif' ? '#dcfce7; color: #166534' : '#fee2e2; color: #991b1b'};">
+                                ${item.status === 'actif' ? 'Actif' : 'Désabonné'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn-sm btn-danger" onclick="deleteSubscriber(${item.id})">Supprimer</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state" style="color: #ef4444;">Erreur.</td></tr>';
+            }
+        }
+
+        async function addSubscriber() {
+            const email = document.getElementById('newSubEmail').value.trim();
+            const name = document.getElementById('newSubName').value.trim();
+            if (!email) return alert('Email requis');
+
+            try {
+                const response = await fetch('/api/subscribers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, name })
+                });
+                if (!response.ok) throw new Error('Erreur');
+                document.getElementById('newSubEmail').value = '';
+                document.getElementById('newSubName').value = '';
+                renderSubscribers();
+            } catch (err) {
+                alert("Erreur lors de l'ajout");
+            }
+        }
+
+        async function deleteSubscriber(id) {
+            if (confirm('Supprimer cet abonné ?')) {
+                await fetch(`/api/subscribers/${id}`, { method: 'DELETE' });
+                renderSubscribers();
+            }
+        }
+
+        // --- Newsletters Logic ---
+        function openNewsletterForm(id = null, subject = '', content = '') {
+            document.getElementById('newsletterFormContainer').style.display = 'block';
+            document.getElementById('nlFormTitle').textContent = id ? 'Modifier la Newsletter' : 'Créer une Newsletter';
+            document.getElementById('nlId').value = id || '';
+            document.getElementById('nlSubject').value = subject;
+            document.getElementById('nlContent').value = content;
+        }
+
+        function closeNewsletterForm() {
+            document.getElementById('newsletterFormContainer').style.display = 'none';
+        }
+
+        async function renderNewsletters() {
+            const tbody = document.getElementById('newslettersTableBody');
+            try {
+                const response = await fetch('/api/newsletters');
+                const data = await response.json();
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Aucune newsletter.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.map(item => `
+                    <tr>
+                        <td><strong>${item.subject}</strong></td>
+                        <td>
+                            <span style="padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; background: ${item.status === 'envoyé' ? '#dcfce7; color: #166534' : '#f1f5f9; color: #475569'};">
+                                ${item.status === 'envoyé' ? 'Envoyé' : 'Brouillon'}
+                            </span>
+                        </td>
+                        <td><span class="badge-date">${item.sent_at ? formatDate(item.sent_at) : formatDate(item.date)}</span></td>
+                        <td>
+                            ${item.status !== 'envoyé' ? `
+                                <button class="btn-sm" style="background:var(--dark-muted);color:white;border:none;cursor:pointer;" onclick="openNewsletterForm(${item.id}, \`${item.subject.replace(/'/g, "\\'")}\`, \`${item.content.replace(/`/g, "\\`").replace(/'/g, "\\'")}\`)">Modifier</button>
+                                <button class="btn-sm" style="background:var(--primary);color:white;border:none;cursor:pointer;" onclick="sendNewsletter(${item.id})">Envoyer</button>
+                            ` : `
+                                <button class="btn-sm" style="background:#3b82f6;color:white;border:none;cursor:pointer;" onclick="showNewsletterStats(${item.id})">Statistiques</button>
+                            `}
+                            <button class="btn-sm btn-danger" onclick="deleteNewsletter(${item.id})">Supprimer</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-state" style="color: #ef4444;">Erreur.</td></tr>';
+            }
+        }
+
+        async function saveNewsletter() {
+            const id = document.getElementById('nlId').value;
+            const subject = document.getElementById('nlSubject').value.trim();
+            const content = document.getElementById('nlContent').value.trim();
+
+            if (!subject || !content) return alert('Sujet et contenu requis.');
+
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/newsletters/${id}` : '/api/newsletters';
+
+            try {
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ subject, content })
+                });
+                if (!response.ok) throw new Error('Erreur');
+                closeNewsletterForm();
+                renderNewsletters();
+            } catch (err) {
+                alert("Erreur lors de la sauvegarde.");
+            }
+        }
+
+        async function deleteNewsletter(id) {
+            if (confirm('Supprimer cette newsletter ?')) {
+                await fetch(`/api/newsletters/${id}`, { method: 'DELETE' });
+                renderNewsletters();
+            }
+        }
+
+        async function sendNewsletter(id) {
+            const email = prompt("Voulez-vous d'abord envoyer un TEST ? Si oui, entrez votre adresse email ci-dessous. Sinon, laissez vide pour envoyer à TOUTE la liste des abonnés.");
+            
+            if (email === null) return; // Cancelled
+
+            const isTest = email.trim() !== '';
+            
+            if (!isTest && !confirm("ATTENTION : Vous êtes sur le point d'envoyer cet email à TOUTE la liste des abonnés actifs. Confirmez-vous l'envoi réel ?")) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/newsletters/${id}/send`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ testEmail: isTest ? email.trim() : null })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) throw new Error(data.error || 'Erreur inconnue');
+                
+                alert(`Envoyé avec succès à ${data.count} destinataire(s) !`);
+                renderNewsletters();
+            } catch (err) {
+                alert("Erreur lors de l'envoi : " + err.message);
+            }
+        }
+
+        async function showNewsletterStats(id) {
+            try {
+                alert("Récupération des statistiques depuis Mailjet, veuillez patienter...");
+                const response = await fetch(`/api/newsletters/${id}/stats`);
+                const data = await response.json();
+                
+                if (!response.ok) throw new Error(data.error || 'Erreur');
+                
+                const delivered = data.deliveredCount;
+                const opens = data.openedCount;
+                const clicks = data.clickedCount;
+                
+                const openRate = delivered > 0 ? ((opens / delivered) * 100).toFixed(1) : 0;
+                const clickRate = delivered > 0 ? ((clicks / delivered) * 100).toFixed(1) : 0;
+                
+                let statsHtml = `Statistiques de la Newsletter\n\n`;
+                statsHtml += `📨 Envoyés / Délivrés : ${data.totalSent} / ${delivered}\n`;
+                statsHtml += `👀 Ouvertures : ${opens} (${openRate}%)\n`;
+                statsHtml += `👆 Clics : ${clicks} (${clickRate}%)\n`;
+                statsHtml += `🚫 Erreurs (Bounces) : ${data.bouncedCount}\n`;
+                statsHtml += `🛑 Plaintes Spam : ${data.spamCount}\n`;
+                statsHtml += `👋 Désabonnements : ${data.unsubscribedCount}\n`;
+                
+                alert(statsHtml);
+            } catch(err) {
+                alert("Erreur: " + err.message);
+            }
+        }
+
         // --- CMS Logic ---
         const cmsFieldsConfig = [
             { id: 'hero-img', label: 'Image de fond Accueil (URL)', type: 'text', default: 'assets/background-photo.jpg' },
@@ -527,6 +800,10 @@
             { id: 'galerie-5-title', label: 'Galerie 5 Titre', type: 'text', default: 'Notre engagement' },
             { id: 'galerie-5-desc', label: 'Galerie 5 Desc', type: 'textarea', default: `Notre force réside dans la diversité et l'engagement de nos bénévoles. Que vous ayez quelques heures ou plusieurs jours à consacrer, chaque aide compte pour animer notre quartier.` },
 
+            { id: 'mailjet_api_key', label: 'Clé API Publique Mailjet', type: 'text', default: '' },
+            { id: 'mailjet_api_secret', label: 'Clé Secrète Mailjet', type: 'text', default: '' },
+            { id: 'mailjet_sender_email', label: 'Email Expéditeur Mailjet (vérifié)', type: 'text', default: 'contact@falguiere.org' },
+            { id: 'mailjet_sender_name', label: 'Nom Expéditeur Mailjet', type: 'text', default: 'Association Falguière' },
             { id: 'footer-desc', label: 'Footer Description', type: 'textarea', default: `L'association pour le développement et la solidarité du quartier Falguière à Paris 15e.` }
         ];
 

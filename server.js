@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
+const Mailjet = require('node-mailjet');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -82,6 +83,28 @@ async function initDB() {
         date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS subscribers (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255),
+        email VARCHAR(255) UNIQUE NOT NULL,
+        status VARCHAR(50) DEFAULT 'actif',
+        date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS newsletters (
+        id SERIAL PRIMARY KEY,
+        subject VARCHAR(255) NOT NULL,
+        content TEXT NOT NULL,
+        status VARCHAR(50) DEFAULT 'brouillon',
+        sent_at TIMESTAMP,
+        stats TEXT,
+        date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
     console.log('Database tables initialized successfully');
   } catch (err) {
     console.error('Error initializing database tables:', err);
@@ -100,6 +123,12 @@ app.post('/api/adhesions', async (req, res) => {
       'INSERT INTO adhesions (name, email, phone, date) VALUES ($1, $2, $3, NOW()) RETURNING *',
       [name, email, phone]
     );
+    
+    await pool.query(
+      'INSERT INTO subscribers (name, email, status, date) VALUES ($1, $2, $3, NOW()) ON CONFLICT (email) DO NOTHING',
+      [name, email, 'actif']
+    );
+
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error(err);
@@ -335,6 +364,214 @@ app.get('/api/documents/:id/view', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');
+  }
+});
+
+// --- SUBSCRIBERS ---
+app.get('/api/subscribers', async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM subscribers ORDER BY id DESC");
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.post('/api/subscribers', async (req, res) => {
+  try {
+    const { email, name } = req.body;
+    const result = await pool.query(
+      "INSERT INTO subscribers (email, name, status, date) VALUES ($1, $2, 'actif', NOW()) ON CONFLICT (email) DO UPDATE SET status = 'actif', name = EXCLUDED.name RETURNING *",
+      [email, name || '']
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.delete('/api/subscribers/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query('DELETE FROM subscribers WHERE id = $1', [id]);
+    res.status(204).send();
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.post('/api/subscribers/:id/unsubscribe', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query("UPDATE subscribers SET status = 'desabonne' WHERE id = $1", [id]);
+    res.status(200).send();
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// --- NEWSLETTERS ---
+app.get('/api/newsletters', async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM newsletters ORDER BY id DESC");
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.post('/api/newsletters', async (req, res) => {
+  try {
+    const { subject, content } = req.body;
+    const result = await pool.query(
+      "INSERT INTO newsletters (subject, content, status, date) VALUES ($1, $2, 'brouillon', NOW()) RETURNING *",
+      [subject, content]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.put('/api/newsletters/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { subject, content } = req.body;
+    const result = await pool.query(
+      "UPDATE newsletters SET subject = $1, content = $2 WHERE id = $3 RETURNING *",
+      [subject, content, id]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.delete('/api/newsletters/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query('DELETE FROM newsletters WHERE id = $1', [id]);
+    res.status(204).send();
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.post('/api/newsletters/:id/send', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { testEmail } = req.body;
+    
+    const nlResult = await pool.query("SELECT * FROM newsletters WHERE id = $1", [id]);
+    if (nlResult.rows.length === 0) return res.status(404).json({ error: 'Newsletter non trouvée' });
+    const newsletter = nlResult.rows[0];
+
+    const cmsResult = await pool.query("SELECT key, value FROM cms_content WHERE key IN ('mailjet_api_key', 'mailjet_api_secret', 'mailjet_sender_email', 'mailjet_sender_name')");
+    const settings = {};
+    cmsResult.rows.forEach(r => settings[r.key] = r.value);
+
+    if (!settings.mailjet_api_key || !settings.mailjet_api_secret || !settings.mailjet_sender_email) {
+      return res.status(400).json({ error: "Clés API Mailjet non configurées dans les paramètres." });
+    }
+
+    const mailjet = new Mailjet({ apiKey: settings.mailjet_api_key, apiSecret: settings.mailjet_api_secret });
+
+    let recipients = [];
+    if (testEmail) {
+      recipients = [{ Email: testEmail, Name: 'Test' }];
+    } else {
+      const subResult = await pool.query("SELECT email, name FROM subscribers WHERE status = 'actif'");
+      if (subResult.rows.length === 0) return res.status(400).json({ error: "Aucun abonné actif." });
+      recipients = subResult.rows.map(sub => ({ Email: sub.email, Name: sub.name || '' }));
+    }
+
+    const messages = recipients.map(recipient => ({
+      From: {
+        Email: settings.mailjet_sender_email,
+        Name: settings.mailjet_sender_name || 'Association Falguiere'
+      },
+      To: [recipient],
+      Subject: newsletter.subject,
+      HTMLPart: newsletter.content,
+      TextPart: newsletter.content.replace(/<[^>]+>/g, ''),
+      CustomCampaign: `Falguiere_NL_${newsletter.id}`,
+      TrackOpens: "account_default",
+      TrackClicks: "account_default"
+    }));
+
+    const chunkSize = 50;
+    for (let i = 0; i < messages.length; i += chunkSize) {
+      const chunk = messages.slice(i, i + chunkSize);
+      await mailjet.post("send", { version: "v3.1" }).request({ Messages: chunk });
+    }
+
+    if (!testEmail) {
+      await pool.query("UPDATE newsletters SET status = 'envoyé', sent_at = NOW() WHERE id = $1", [id]);
+    }
+
+    res.json({ success: true, count: recipients.length });
+  } catch (err) {
+    console.error(err.message || err);
+    res.status(500).json({ error: "Erreur lors de l'envoi Mailjet" });
+  }
+});
+
+app.get('/api/newsletters/:id/stats', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const cmsResult = await pool.query("SELECT key, value FROM cms_content WHERE key IN ('mailjet_api_key', 'mailjet_api_secret')");
+    const settings = {};
+    cmsResult.rows.forEach(r => settings[r.key] = r.value);
+
+    if (!settings.mailjet_api_key || !settings.mailjet_api_secret) {
+      return res.status(400).json({ error: "Clés API manquantes." });
+    }
+
+    const mailjet = new Mailjet({ apiKey: settings.mailjet_api_key, apiSecret: settings.mailjet_api_secret });
+    const customCampaignName = `Falguiere_NL_${id}`;
+
+    const campaignReq = await mailjet.get('campaign', { version: 'v3' }).request({ CustomCampaign: customCampaignName });
+    const campaigns = campaignReq.body.Data;
+
+    let stats = {
+      deliveredCount: 0,
+      openedCount: 0,
+      clickedCount: 0,
+      bouncedCount: 0,
+      spamCount: 0,
+      unsubscribedCount: 0,
+      totalSent: 0
+    };
+
+    if (campaigns && campaigns.length > 0) {
+      for (const campaign of campaigns) {
+        const msgReq = await mailjet.get('message', { version: 'v3' }).request({
+          Campaign: campaign.ID,
+          ShowSubject: false,
+          ShowContactAlt: false
+        });
+
+        const messages = msgReq.body.Data || [];
+        for (const msg of messages) {
+            stats.totalSent++;
+            const status = msg.Status.toLowerCase();
+            if (status === 'opened') stats.openedCount++;
+            if (status === 'clicked') stats.clickedCount++;
+            if (status === 'bounced') stats.bouncedCount++;
+            if (status === 'spam') stats.spamCount++;
+            if (status === 'unsub') stats.unsubscribedCount++;
+            if (['sent', 'opened', 'clicked', 'unsub'].includes(status)) stats.deliveredCount++;
+        }
+      }
+    }
+
+    await pool.query("UPDATE newsletters SET stats = $1 WHERE id = $2", [JSON.stringify(stats), id]);
+
+    res.json(stats);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur lors de la récupération des stats" });
   }
 });
 
