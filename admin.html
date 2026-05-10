@@ -10,11 +10,11 @@
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
     <style>
-        body { background-color: var(--gray-bg); padding-top: 2rem; }
-        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        body { background-color: var(--gray-bg); }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
         .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
         .admin-card { background: var(--white); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-sm); }
-        .admin-card h2 { margin-bottom: 1.5rem; font-size: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .admin-card h2 { margin-bottom: 1.5rem; font-size: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th, td { padding: 1rem; border-bottom: 1px solid #e2e8f0; }
@@ -53,6 +53,37 @@
         .digicode-btn.btn-action { font-size: 1.2rem; }
         .digicode-btn.btn-clear { color: #ff5555; }
         .digicode-btn.btn-val { color: #55ff55; }
+
+        /* Admin Mobile Responsiveness */
+        @media (max-width: 992px) {
+            .admin-layout { flex-direction: column; min-height: 100vh; }
+            .admin-sidebar { width: 100%; padding: 1.5rem 1rem; flex-direction: column; align-items: center; }
+            .admin-sidebar .logo { margin-bottom: 1.5rem; }
+            .admin-nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; width: 100%; }
+            .admin-nav li { margin-bottom: 0; }
+            .admin-nav li[style*="margin-top"] { margin-top: 0.5rem !important; }
+            .admin-nav a { padding: 0.5rem 0.75rem; font-size: 0.9rem; }
+            .admin-main { padding: 1.5rem 1rem; }
+            .admin-sidebar > div[style*="margin-top: auto"] { margin-top: 1.5rem !important; width: 100%; max-width: 300px; text-align: center; }
+            
+            .digicode-container { width: 100%; max-width: 320px; padding: 2rem 1rem; }
+            .digicode-btn { width: 60px; height: 60px; font-size: 1.2rem; }
+            .admin-card { padding: 1.5rem 1rem; }
+        }
+        @media (max-width: 768px) {
+            .admin-card h2 { flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .admin-card h2 button { width: 100%; }
+            .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            .cms-field input, .cms-field textarea { font-size: 16px; } /* prevent iOS zoom */
+            
+            .form-row-responsive { flex-direction: column; align-items: stretch !important; gap: 1rem; }
+            .form-row-responsive > div, .form-row-responsive > button, .form-btn-responsive { width: 100% !important; min-width: 0 !important; }
+            .upload-btn-container { width: 100% !important; }
+            .upload-btn-container button { width: 100%; }
+            
+            .btn-sm { padding: 0.6rem 1rem; font-size: 1rem; margin-bottom: 0.5rem; display: block; width: 100%; text-align: center; }
+            td .btn-sm { display: inline-block; width: auto; margin-bottom: 0; }
+        }
     </style>
 </head>
 <body>
@@ -148,7 +179,7 @@
                     <span>📂 Documents Utiles</span>
                 </h2>
                 
-                <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+                <div class="form-row-responsive" style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
                     <div style="flex: 1; min-width: 200px;">
                         <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--dark);">Nom du document (Optionnel)</label>
                         <input type="text" id="docName" placeholder="Ex: Statuts (ignoré si plusieurs fichiers)" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: var(--radius-md); font-family: inherit;">
@@ -157,7 +188,7 @@
                         <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--dark);">Fichier</label>
                         <input type="file" id="docFile" multiple style="width: 100%; padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: var(--radius-md); font-family: inherit; background: white;">
                     </div>
-                    <div>
+                    <div class="upload-btn-container">
                         <button class="btn btn-primary" onclick="uploadDocument()" id="uploadDocBtn" style="padding: 0.75rem 1.5rem; height: 100%;">Uploader</button>
                     </div>
                 </div>
@@ -237,14 +268,14 @@
                 <h2>
                     <span>👥 Abonnés Newsletter</span>
                 </h2>
-                <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: flex-end;">
-                    <div style="flex: 1;">
+                <div class="form-row-responsive" style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px;">
                         <input type="email" id="newSubEmail" placeholder="Adresse email" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: var(--radius-md);">
                     </div>
-                    <div style="flex: 1;">
+                    <div style="flex: 1; min-width: 200px;">
                         <input type="text" id="newSubName" placeholder="Nom (Optionnel)" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: var(--radius-md);">
                     </div>
-                    <button class="btn btn-primary" onclick="addSubscriber()" style="padding: 0.75rem 1.5rem;">Ajouter</button>
+                    <button class="btn btn-primary form-btn-responsive" onclick="addSubscriber()" style="padding: 0.75rem 1.5rem;">Ajouter</button>
                 </div>
                 <div class="table-responsive">
                     <table>
