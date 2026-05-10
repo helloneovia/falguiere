@@ -2,6 +2,8 @@ const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
 const path = require('path');
+const multer = require('multer');
+const fs = require('fs');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -10,6 +12,20 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '.'))); // Serve static files from current directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Serve uploads directory
+
+// Configure Multer for file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    // Replace spaces with underscores and add a timestamp
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '-' + file.originalname.replace(/\s+/g, '_'));
+  }
+});
+const upload = multer({ storage: storage });
 
 // Database Connection
 // Uses process.env.DATABASE_URL if available, otherwise falls back to the provided internal Dokploy URL
@@ -48,6 +64,16 @@ async function initDB() {
       CREATE TABLE IF NOT EXISTS cms_content (
         key VARCHAR(255) PRIMARY KEY,
         value TEXT NOT NULL
+      );
+    `);
+    
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS documents (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        filename VARCHAR(255) NOT NULL,
+        size INTEGER,
+        date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
     console.log('Database tables initialized successfully');
@@ -164,6 +190,61 @@ app.post('/api/cms', async (req, res) => {
     res.json({ message: 'CMS content updated successfully' });
   } catch (err) {
     await pool.query('ROLLBACK');
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// 4. Documents
+app.get('/api/documents', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM documents ORDER BY date DESC');
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.post('/api/documents', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Aucun fichier fourni' });
+    }
+    const name = req.body.name || req.file.originalname;
+    const filename = req.file.filename;
+    const size = req.file.size;
+    
+    const result = await pool.query(
+      'INSERT INTO documents (name, filename, size, date) VALUES ($1, $2, $3, NOW()) RETURNING *',
+      [name, filename, size]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.delete('/api/documents/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const docResult = await pool.query('SELECT filename FROM documents WHERE id = $1', [id]);
+    
+    if (docResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Document non trouvé' });
+    }
+    
+    const filename = docResult.rows[0].filename;
+    const filePath = path.join(__dirname, 'uploads', filename);
+    
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+    
+    await pool.query('DELETE FROM documents WHERE id = $1', [id]);
+    res.status(204).send();
+  } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Database error' });
   }
