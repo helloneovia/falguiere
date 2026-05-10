@@ -212,21 +212,32 @@ app.get('/api/documents', async (req, res) => {
   }
 });
 
-app.post('/api/documents', upload.single('file'), async (req, res) => {
+app.post('/api/documents', upload.array('files'), async (req, res) => {
   try {
-    if (!req.file) {
+    if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: 'Aucun fichier fourni' });
     }
-    const name = req.body.name || req.file.originalname;
-    const filename = req.file.filename;
-    const size = req.file.size;
     
-    const result = await pool.query(
-      'INSERT INTO documents (name, filename, size, date) VALUES ($1, $2, $3, NOW()) RETURNING *',
-      [name, filename, size]
-    );
-    res.status(201).json(result.rows[0]);
+    const uploadedDocs = [];
+    await pool.query('BEGIN');
+    
+    for (let i = 0; i < req.files.length; i++) {
+      const file = req.files[i];
+      const name = (req.files.length === 1 && req.body.name) ? req.body.name : file.originalname;
+      const filename = file.filename;
+      const size = file.size;
+      
+      const result = await pool.query(
+        'INSERT INTO documents (name, filename, size, date) VALUES ($1, $2, $3, NOW()) RETURNING *',
+        [name, filename, size]
+      );
+      uploadedDocs.push(result.rows[0]);
+    }
+    
+    await pool.query('COMMIT');
+    res.status(201).json(uploadedDocs);
   } catch (err) {
+    await pool.query('ROLLBACK');
     console.error(err);
     res.status(500).json({ error: 'Database error' });
   }
@@ -256,6 +267,30 @@ app.delete('/api/documents/:id', async (req, res) => {
   }
 });
 
+app.post('/api/documents/bulk-delete', async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: 'Aucun ID fourni' });
+    }
+    
+    const docResult = await pool.query('SELECT filename FROM documents WHERE id = ANY($1)', [ids]);
+    
+    for (const row of docResult.rows) {
+      const filePath = path.join(__dirname, 'uploads', row.filename);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+    
+    await pool.query('DELETE FROM documents WHERE id = ANY($1)', [ids]);
+    res.status(204).send();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
 app.get('/api/documents/:id/download', async (req, res) => {
   try {
     const { id } = req.params;
@@ -274,6 +309,29 @@ app.get('/api/documents/:id/download', async (req, res) => {
     
     // Send file and force download with the original name
     res.download(filePath, name);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Erreur serveur');
+  }
+});
+
+app.get('/api/documents/:id/view', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const docResult = await pool.query('SELECT filename FROM documents WHERE id = $1', [id]);
+    
+    if (docResult.rows.length === 0) {
+      return res.status(404).send('Document introuvable dans la base de données.');
+    }
+    
+    const { filename } = docResult.rows[0];
+    const filePath = path.join(__dirname, 'uploads', filename);
+    
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).send("Le fichier physique est introuvable sur le serveur.");
+    }
+    
+    res.sendFile(filePath);
   } catch (err) {
     console.error(err);
     res.status(500).send('Erreur serveur');

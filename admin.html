@@ -144,21 +144,25 @@
                 <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
                     <div style="flex: 1; min-width: 200px;">
                         <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--dark);">Nom du document (Optionnel)</label>
-                        <input type="text" id="docName" placeholder="Ex: Statuts de l'association" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: var(--radius-md); font-family: inherit;">
+                        <input type="text" id="docName" placeholder="Ex: Statuts (ignoré si plusieurs fichiers)" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: var(--radius-md); font-family: inherit;">
                     </div>
                     <div style="flex: 2; min-width: 250px;">
                         <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--dark);">Fichier</label>
-                        <input type="file" id="docFile" style="width: 100%; padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: var(--radius-md); font-family: inherit; background: white;">
+                        <input type="file" id="docFile" multiple style="width: 100%; padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: var(--radius-md); font-family: inherit; background: white;">
                     </div>
                     <div>
                         <button class="btn btn-primary" onclick="uploadDocument()" id="uploadDocBtn" style="padding: 0.75rem 1.5rem; height: 100%;">Uploader</button>
                     </div>
                 </div>
 
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <button class="btn-sm btn-danger" onclick="deleteSelectedDocuments()" id="bulkDeleteBtn" style="display: none;">Supprimer la sélection</button>
+                </div>
                 <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
+                                <th style="width: 40px;"><input type="checkbox" id="selectAllDocs" onclick="toggleAllDocs(this)"></th>
                                 <th>Date</th>
                                 <th>Nom</th>
                                 <th>Taille</th>
@@ -350,15 +354,18 @@
 
                 tbody.innerHTML = data.map(item => `
                     <tr>
+                        <td><input type="checkbox" class="doc-checkbox" value="${item.id}" onchange="updateBulkDeleteBtn()"></td>
                         <td><span class="badge-date">${formatDate(item.date)}</span></td>
                         <td><strong>${item.name}</strong></td>
                         <td>${formatBytes(item.size)}</td>
                         <td>
+                            <a href="/api/documents/${item.id}/view" target="_blank" class="btn-sm" style="background: var(--dark-muted); color: white; text-decoration: none; display: inline-block; margin-right: 0.5rem;">Visualiser</a>
                             <a href="/api/documents/${item.id}/download" target="_blank" class="btn-sm" style="background: var(--primary); color: white; text-decoration: none; display: inline-block; margin-right: 0.5rem;">Télécharger</a>
                             <button class="btn-sm btn-danger" onclick="deleteDocument(${item.id})">Supprimer</button>
                         </td>
                     </tr>
                 `).join('');
+                updateBulkDeleteBtn();
             } catch (err) {
                 console.error(err);
                 tbody.innerHTML = '<tr><td colspan="4" class="empty-state" style="color: #ef4444;">Erreur lors du chargement des documents.</td></tr>';
@@ -374,10 +381,11 @@
                 return;
             }
 
-            const file = fileInput.files[0];
             const formData = new FormData();
-            formData.append('file', file);
-            if (nameInput.value.trim()) {
+            for (let i = 0; i < fileInput.files.length; i++) {
+                formData.append('files', fileInput.files[i]);
+            }
+            if (nameInput.value.trim() && fileInput.files.length === 1) {
                 formData.append('name', nameInput.value.trim());
             }
 
@@ -421,6 +429,47 @@
                 try {
                     const response = await fetch(`/api/documents/${id}`, { method: 'DELETE' });
                     if (!response.ok) throw new Error('Erreur lors de la suppression');
+                    renderDocuments();
+                } catch (err) {
+                    console.error(err);
+                    alert('Erreur lors de la suppression');
+                }
+            }
+        }
+
+        function toggleAllDocs(source) {
+            const checkboxes = document.querySelectorAll('.doc-checkbox');
+            checkboxes.forEach(cb => cb.checked = source.checked);
+            updateBulkDeleteBtn();
+        }
+
+        function updateBulkDeleteBtn() {
+            const checkboxes = document.querySelectorAll('.doc-checkbox:checked');
+            const btn = document.getElementById('bulkDeleteBtn');
+            if (btn) {
+                btn.style.display = checkboxes.length > 0 ? 'inline-block' : 'none';
+                btn.textContent = \`Supprimer la sélection (\${checkboxes.length})\`;
+            }
+            const selectAll = document.getElementById('selectAllDocs');
+            if (selectAll) {
+                const allCheckboxes = document.querySelectorAll('.doc-checkbox');
+                selectAll.checked = allCheckboxes.length > 0 && checkboxes.length === allCheckboxes.length;
+            }
+        }
+
+        async function deleteSelectedDocuments() {
+            const checkboxes = document.querySelectorAll('.doc-checkbox:checked');
+            if (checkboxes.length === 0) return;
+            
+            if (confirm(\`Êtes-vous sûr de vouloir supprimer ces \${checkboxes.length} documents ? Cette action est irréversible.\`)) {
+                const ids = Array.from(checkboxes).map(cb => parseInt(cb.value));
+                try {
+                    const response = await fetch('/api/documents/bulk-delete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ids })
+                    });
+                    if (!response.ok) throw new Error('Erreur lors de la suppression groupée');
                     renderDocuments();
                 } catch (err) {
                     console.error(err);
