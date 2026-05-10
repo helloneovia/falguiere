@@ -55,17 +55,27 @@
         .digicode-btn.btn-val { color: #55ff55; }
 
         /* Admin Mobile Responsiveness */
+        .admin-menu-btn { display: none; }
+        .sidebar-menu-collapse { display: contents; }
+        
         @media (max-width: 992px) {
             .admin-layout { flex-direction: column; min-height: 100vh; }
-            .admin-sidebar { width: 100%; padding: 1.5rem 1rem; flex-direction: column; align-items: center; }
-            .admin-sidebar .logo { margin-bottom: 1.5rem; }
-            .admin-nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; width: 100%; }
-            .admin-nav li { margin-bottom: 0; }
-            .admin-nav li[style*="margin-top"] { margin-top: 0.5rem !important; }
-            .admin-nav a { padding: 0.5rem 0.75rem; font-size: 0.9rem; }
-            .admin-main { padding: 1.5rem 1rem; }
-            .admin-sidebar > div[style*="margin-top: auto"] { margin-top: 1.5rem !important; width: 100%; max-width: 300px; text-align: center; }
+            .admin-sidebar { width: 100%; padding: 1rem 1.5rem; flex-direction: column; align-items: stretch; }
             
+            /* Hamburger Menu */
+            .admin-menu-btn { display: block; background: none; border: none; cursor: pointer; padding: 0.5rem; z-index: 1001; margin-left: auto; }
+            .admin-menu-btn span { display: block; width: 24px; height: 2px; background-color: var(--white); margin: 5px 0; transition: var(--transition); }
+            .sidebar-menu-collapse { display: none; flex-direction: column; margin-top: 1.5rem; width: 100%; }
+            .sidebar-menu-collapse.open { display: flex; }
+            
+            .admin-sidebar .logo { margin-bottom: 0; }
+            .admin-nav { display: flex; flex-direction: column; gap: 0.2rem; width: 100%; }
+            .admin-nav li { margin-bottom: 0; }
+            .admin-nav li[style*="margin-top"] { margin-top: 1rem !important; }
+            .admin-nav a { padding: 0.8rem 1rem; font-size: 1rem; justify-content: flex-start; }
+            .sidebar-menu-collapse > div[style*="margin-top: auto"] { margin-top: 1.5rem !important; width: 100%; text-align: center; }
+            
+            .admin-main { padding: 1.5rem 1rem; }
             .digicode-container { width: 100%; max-width: 320px; padding: 2rem 1rem; }
             .digicode-btn { width: 60px; height: 60px; font-size: 1.2rem; }
             .admin-card { padding: 1.5rem 1rem; }
@@ -115,19 +125,27 @@
     <div class="admin-layout" id="adminContent" style="display: none;">
         <!-- Sidebar -->
         <aside class="admin-sidebar">
-            <a href="index.html" class="logo">
-                <span class="logo-accent">FAL</span>GUIÈRE
-            </a>
-            <ul class="admin-nav">
-                <li><a onclick="switchTab('dashboard')" id="nav-dashboard" class="active">🏠 Tableau de bord</a></li>
-                <li><a onclick="switchTab('newsletters')" id="nav-newsletters">📰 Newsletters</a></li>
-                <li><a onclick="switchTab('subscribers')" id="nav-subscribers">👥 Abonnés</a></li>
-                <li><a onclick="switchTab('cms')" id="nav-cms">✏️ Éditeur de Site</a></li>
-                <li><a onclick="switchTab('settings')" id="nav-settings">⚙️ Paramètres API</a></li>
-                <li style="margin-top: 2rem;"><a onclick="logout()" id="nav-logout" style="color: #ef4444; cursor: pointer;">🚪 Déconnexion</a></li>
-            </ul>
-            <div style="margin-top: auto;">
-                <a href="index.html" class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3); width: 100%;">Retour au site</a>
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <a href="index.html" class="logo" style="margin-bottom: 0;">
+                    <span class="logo-accent">FAL</span>GUIÈRE
+                </a>
+                <button class="admin-menu-btn" onclick="toggleAdminMenu()" id="adminMenuBtn">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+            
+            <div class="sidebar-menu-collapse" id="adminMenuCollapse">
+                <ul class="admin-nav">
+                    <li><a onclick="switchTab('dashboard')" id="nav-dashboard" class="active">🏠 Tableau de bord</a></li>
+                    <li><a onclick="switchTab('newsletters')" id="nav-newsletters">📰 Newsletters</a></li>
+                    <li><a onclick="switchTab('subscribers')" id="nav-subscribers">👥 Abonnés</a></li>
+                    <li><a onclick="switchTab('cms')" id="nav-cms">✏️ Éditeur de Site</a></li>
+                    <li><a onclick="switchTab('settings')" id="nav-settings">⚙️ Paramètres API</a></li>
+                    <li style="margin-top: 2rem;"><a onclick="logout()" id="nav-logout" style="color: #ef4444; cursor: pointer;">🚪 Déconnexion</a></li>
+                </ul>
+                <div style="margin-top: auto; padding-top: 1rem;">
+                    <a href="index.html" class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3); width: 100%;">Retour au site</a>
+                </div>
             </div>
         </aside>
 
@@ -379,12 +397,19 @@
             }
         });
 
-        
+        function toggleAdminMenu() {
+            const menu = document.getElementById('adminMenuCollapse');
+            menu.classList.toggle('open');
+        }
+
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.admin-nav a').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tabId).classList.add('active');
             document.getElementById('nav-' + tabId).classList.add('active');
+            
+            const menu = document.getElementById('adminMenuCollapse');
+            if (menu) menu.classList.remove('open');
         }
 
         function logout() {
