@@ -5,10 +5,11 @@
   "start_url": "/",
   "id": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
   "orientation": "any",
-  "prefer_related_applications": false,
-  "related_applications": [],
-  "iarc_rating_id": "",
+  "scope": "/",
+  "lang": "fr",
+  "dir": "ltr",
   "background_color": "#ffffff",
   "theme_color": "#d97743",
   "icons": [
@@ -45,5 +46,21 @@
       "form_factor": "narrow"
     }
   ],
-  "categories": ["social", "community"]
+  "categories": ["social", "community"],
+  "shortcuts": [
+    {
+      "name": "Nous Rejoindre",
+      "short_name": "Adhésion",
+      "description": "Rejoignez l'association Falguière",
+      "url": "/#adhesion",
+      "icons": [{ "src": "/assets/icon-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Nos Actions",
+      "short_name": "Actions",
+      "description": "Découvrez nos actions concrètes",
+      "url": "/#actions",
+      "icons": [{ "src": "/assets/icon-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
 }
