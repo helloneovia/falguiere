@@ -32,6 +32,37 @@
       }
     }
   ],
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+falguiere",
+      "url": "/?action=%s"
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "widgets": [
+    {
+      "name": "Falguière Widget",
+      "short_name": "Falguière",
+      "description": "Widget de l'association",
+      "tag": "falguiere-widget",
+      "ms_ac_template": "widget-template.json",
+      "data": "widget-data.json",
+      "type": "application/json",
+      "screenshots": [],
+      "icons": [{ "src": "/assets/icon-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ],
   "background_color": "#ffffff",
   "theme_color": "#d97743",
   "icons": [
