@@ -579,6 +579,11 @@ app.get('/api/newsletters/:id/stats', async (req, res) => {
   }
 });
 
+// Admin route
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
 // Fallback to serve index.html for unknown routes (SPA like behavior)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
