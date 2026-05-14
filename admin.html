@@ -283,8 +283,8 @@
                     <div class="form-row-responsive" style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
                         <input type="hidden" id="accountingId">
                         <div style="flex: 1; min-width: 150px;">
-                            <label style="display: block; font-size: 0.9rem; margin-bottom: 0.3rem;">Date</label>
-                            <input type="date" id="accDate" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: var(--radius-md);">
+                            <label style="display: block; font-size: 0.9rem; margin-bottom: 0.3rem;">Date (JJ/MM/AAAA)</label>
+                            <input type="text" id="accDate" placeholder="ex: 25/12/2026" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: var(--radius-md);">
                         </div>
                         <div style="flex: 1; min-width: 150px;">
                             <label style="display: block; font-size: 0.9rem; margin-bottom: 0.3rem;">Espèces (€)</label>
@@ -942,7 +942,7 @@
 
         async function renderAccounting() {
             const tbody = document.getElementById('accountingTableBody');
-            document.getElementById('accDate').valueAsDate = new Date(); // Default today
+            const today = new Date(); const dd = String(today.getDate()).padStart(2, '0'); const mm = String(today.getMonth() + 1).padStart(2, '0'); document.getElementById('accDate').value = `${dd}/${mm}/${today.getFullYear()}`;
             
             try {
                 const response = await fetch('/api/accounting');
@@ -1028,11 +1028,16 @@
 
         async function saveAccounting() {
             const id = document.getElementById('accountingId').value;
-            const date = document.getElementById('accDate').value;
+            let dateStr = document.getElementById('accDate').value.trim();
             const cash = parseFloat(document.getElementById('accCash').value) || 0;
             const card = parseFloat(document.getElementById('accCard').value) || 0;
 
-            if (!date) return alert('La date est requise');
+            if (!dateStr) return alert('La date est requise');
+
+            // Conversion JJ/MM/AAAA vers YYYY-MM-DD
+            const dateParts = dateStr.split('/');
+            if (dateParts.length !== 3) return alert('La date doit être au format JJ/MM/AAAA');
+            const isoDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
 
             const method = id ? 'PUT' : 'POST';
             const url = id ? `/api/accounting/${id}` : '/api/accounting';
@@ -1041,13 +1046,16 @@
                 const response = await fetch(url, {
                     method,
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ date, cash_amount: cash, card_amount: card })
+                    body: JSON.stringify({ date: isoDate, cash_amount: cash, card_amount: card })
                 });
                 if (!response.ok) throw new Error('Erreur de sauvegarde');
                 
                 // Reset form
                 document.getElementById('accountingId').value = '';
-                document.getElementById('accDate').valueAsDate = new Date();
+                const today = new Date();
+                const dd = String(today.getDate()).padStart(2, '0');
+                const mm = String(today.getMonth() + 1).padStart(2, '0');
+                document.getElementById('accDate').value = `${dd}/${mm}/${today.getFullYear()}`;
                 document.getElementById('accCash').value = '';
                 document.getElementById('accCard').value = '';
                 
@@ -1062,7 +1070,12 @@
             const item = globalAccounting.find(a => a.id === id);
             if (item) {
                 document.getElementById('accountingId').value = item.id;
-                document.getElementById('accDate').value = item.date.split('T')[0];
+                
+                const d = new Date(item.date);
+                const dd = String(d.getDate()).padStart(2, '0');
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                document.getElementById('accDate').value = `${dd}/${mm}/${d.getFullYear()}`;
+                
                 document.getElementById('accCash').value = item.cash_amount;
                 document.getElementById('accCard').value = item.card_amount;
                 window.scrollTo(0, document.getElementById('accDate').offsetTop - 100);

@@ -136,6 +136,17 @@ async function initDB() {
     await pool.query(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS rating_sum INT DEFAULT 0;`).catch(e => {});
     await pool.query(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS rating_count INT DEFAULT 0;`).catch(e => {});
 
+    // Table Comptabilité
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS accounting (
+        id SERIAL PRIMARY KEY,
+        date DATE NOT NULL,
+        cash_amount NUMERIC(10, 2) DEFAULT 0,
+        card_amount NUMERIC(10, 2) DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     console.log('Database tables initialized successfully');
   } catch (err) {
     console.error('Error initializing database tables:', err);
@@ -768,6 +779,53 @@ app.delete('/api/projects/:id', async (req, res) => {
     res.status(204).send();
   } catch (err) {
     console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// === ROUTES COMPTABILITÉ ===
+app.get('/api/accounting', async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM accounting ORDER BY date DESC");
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.post('/api/accounting', async (req, res) => {
+  try {
+    const { date, cash_amount, card_amount } = req.body;
+    const result = await pool.query(
+      "INSERT INTO accounting (date, cash_amount, card_amount) VALUES ($1, $2, $3) RETURNING *",
+      [date, cash_amount, card_amount]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.put('/api/accounting/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { date, cash_amount, card_amount } = req.body;
+    const result = await pool.query(
+      "UPDATE accounting SET date = $1, cash_amount = $2, card_amount = $3 WHERE id = $4 RETURNING *",
+      [date, cash_amount, card_amount, id]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.delete('/api/accounting/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query("DELETE FROM accounting WHERE id = $1", [id]);
+    res.status(204).send();
+  } catch (err) {
     res.status(500).json({ error: 'Database error' });
   }
 });
