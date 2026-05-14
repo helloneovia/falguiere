@@ -65,6 +65,38 @@
             border-radius: var(--radius-md);
             margin-bottom: 1rem;
         }
+        .rating-container {
+            margin-top: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 1rem;
+        }
+        .star-rating {
+            display: flex;
+            gap: 0.2rem;
+        }
+        .star {
+            color: #cbd5e1;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s, transform 0.1s;
+        }
+        .star:hover:not(.voted) {
+            transform: scale(1.2);
+        }
+        .star.active {
+            color: #fbbf24;
+        }
+        .star.voted {
+            cursor: default;
+        }
+        .rating-info {
+            font-size: 0.85rem;
+            color: var(--dark-muted);
+            font-weight: 600;
+        }
         .submit-section {
             background: #f8fafc;
             padding: 4rem 0;
@@ -249,18 +281,84 @@
                 container.innerHTML = data.map(p => {
                     const d = new Date(p.date).toLocaleDateString('fr-FR');
                     const imgHtml = p.image ? `<img src="${p.image}" class="project-img" alt="Image du projet">` : '';
+                    
+                    const ratingSum = p.rating_sum || 0;
+                    const ratingCount = p.rating_count || 0;
+                    const avgRating = ratingCount > 0 ? (ratingSum / ratingCount).toFixed(1) : 0;
+                    
+                    const hasVoted = localStorage.getItem('voted_project_' + p.id);
+                    
+                    let starsHtml = '';
+                    const displayRating = Math.round(avgRating);
+                    for (let i = 1; i <= 5; i++) {
+                        const isGold = i <= displayRating ? 'active' : '';
+                        if (hasVoted) {
+                            starsHtml += `<span class="star voted ${isGold}">★</span>`;
+                        } else {
+                            starsHtml += `<span class="star ${isGold}" onmouseover="highlightStars(this, ${i})" onmouseout="resetStars(this)" onclick="submitVote(${p.id}, ${i})">★</span>`;
+                        }
+                    }
+
                     return `
-                        <div class="project-card">
+                        <div class="project-card" id="project-${p.id}">
                             ${imgHtml}
                             <div class="project-date">Publié le ${d}</div>
                             <h3 class="project-title">${p.title.replace(/</g, "&lt;")}</h3>
                             <div class="project-desc">${p.description.replace(/</g, "&lt;")}</div>
                             <div class="project-author">Par ${p.name.replace(/</g, "&lt;")}</div>
+                            
+                            <div class="rating-container">
+                                <div class="star-rating" data-avg="${avgRating}">
+                                    ${starsHtml}
+                                </div>
+                                <div class="rating-info">
+                                    ${ratingCount > 0 ? `${avgRating}/5 (${ratingCount} avis)` : 'Soyez le premier à voter'}
+                                </div>
+                            </div>
                         </div>
                     `;
                 }).join('');
             } catch (err) {
                 container.innerHTML = '<p style="text-align: center; width: 100%; color: #ef4444;">Impossible de charger les projets pour le moment.</p>';
+            }
+        }
+
+        function highlightStars(element, rating) {
+            const container = element.parentElement;
+            if (container.querySelector('.voted')) return;
+            const stars = container.querySelectorAll('.star');
+            stars.forEach((s, index) => {
+                if (index < rating) s.classList.add('active');
+                else s.classList.remove('active');
+            });
+        }
+
+        function resetStars(element) {
+            const container = element.parentElement;
+            if (container.querySelector('.voted')) return;
+            const avg = parseFloat(container.dataset.avg);
+            const displayRating = Math.round(avg);
+            const stars = container.querySelectorAll('.star');
+            stars.forEach((s, index) => {
+                if (index < displayRating) s.classList.add('active');
+                else s.classList.remove('active');
+            });
+        }
+
+        async function submitVote(projectId, rating) {
+            try {
+                const res = await fetch(`/api/projects/${projectId}/vote`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rating })
+                });
+                
+                if (res.ok) {
+                    localStorage.setItem('voted_project_' + projectId, rating);
+                    loadProjects();
+                }
+            } catch (err) {
+                console.error('Error voting:', err);
             }
         }
     </script>

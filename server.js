@@ -125,12 +125,16 @@ async function initDB() {
         title VARCHAR(255) NOT NULL,
         description TEXT NOT NULL,
         image VARCHAR(255),
+        rating_sum INT DEFAULT 0,
+        rating_count INT DEFAULT 0,
         date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
     
-    // Ajout de la colonne image si elle n'existe pas
+    // Ajout des colonnes si elles n'existent pas
     await pool.query(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS image VARCHAR(255);`).catch(e => {});
+    await pool.query(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS rating_sum INT DEFAULT 0;`).catch(e => {});
+    await pool.query(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS rating_count INT DEFAULT 0;`).catch(e => {});
 
     console.log('Database tables initialized successfully');
   } catch (err) {
@@ -726,6 +730,31 @@ app.post('/api/projects', upload.single('image'), async (req, res) => {
       [name, email, title, description, imageUrl]
     );
     res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.post('/api/projects/:id/vote', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rating } = req.body;
+    
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ error: 'Note invalide (doit être entre 1 et 5)' });
+    }
+
+    const result = await pool.query(
+      "UPDATE projects SET rating_sum = rating_sum + $1, rating_count = rating_count + 1 WHERE id = $2 RETURNING *",
+      [rating, id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Projet non trouvé' });
+    }
+
+    res.json(result.rows[0]);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Database error' });

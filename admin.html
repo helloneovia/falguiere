@@ -839,6 +839,11 @@
 
                 tbody.innerHTML = data.map(item => {
                     const imgHtml = item.image ? `<br><a href="${item.image}" target="_blank" style="font-size: 0.8em; color: var(--primary);">🖼️ Voir l'image jointe</a>` : '';
+                    const ratingSum = item.rating_sum || 0;
+                    const ratingCount = item.rating_count || 0;
+                    const avgRating = ratingCount > 0 ? (ratingSum / ratingCount).toFixed(1) : 0;
+                    const ratingHtml = ratingCount > 0 ? `<br><span style="font-size:0.9em; color:#fbbf24;">★ ${avgRating}/5</span> <span style="font-size:0.8em; color:var(--dark-muted)">(${ratingCount} avis)</span>` : '<br><span style="font-size:0.8em; color:var(--dark-muted)">Aucun avis</span>';
+                    
                     return `
                     <tr>
                         <td data-label="Date"><span class="badge-date">${formatDate(item.date)}</span></td>
@@ -850,6 +855,7 @@
                             <strong style="display:block;margin-bottom:0.3rem;">${item.title}</strong>
                             <span style="white-space: pre-wrap; font-size: 0.9em;">${item.description}</span>
                             ${imgHtml}
+                            ${ratingHtml}
                         </td>
                         <td data-label="Actions">
                             <button class="btn-sm btn-danger" onclick="deleteProject(${item.id})">Supprimer</button>
