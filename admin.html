@@ -105,6 +105,7 @@
             td .btn-sm:last-child { margin-bottom: 0; }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <!-- Login Overlay -->
@@ -272,6 +273,16 @@
                         <div style="font-size: 0.8rem; margin-top: 0.5rem; color: #64748b;">
                             Espèces: <span id="statYearlyCash">0.00 €</span> | Carte: <span id="statYearlyCard">0.00 €</span>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Courbe des gains -->
+                <div class="admin-card" style="margin-bottom: 2rem;">
+                    <h2>
+                        <span>📈 Courbe des Gains (30 derniers jours)</span>
+                    </h2>
+                    <div style="position: relative; height: 300px; width: 100%;">
+                        <canvas id="accountingChart"></canvas>
                     </div>
                 </div>
 
@@ -951,6 +962,7 @@
                 globalAccounting = data;
                 
                 calculateAccountingStats(data);
+                renderAccountingChart(data);
                 
                 if (data.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Aucune entrée comptable.</td></tr>';
@@ -979,6 +991,62 @@
                 console.error(err);
                 tbody.innerHTML = '<tr><td colspan="5" class="empty-state" style="color: #ef4444;">Erreur lors du chargement.</td></tr>';
             }
+        }
+
+        let accountingChartInstance = null;
+
+        function renderAccountingChart(data) {
+            const ctx = document.getElementById('accountingChart').getContext('2d');
+            
+            const dailyTotals = {};
+            data.forEach(item => {
+                const d = item.date.split('T')[0];
+                if (!dailyTotals[d]) dailyTotals[d] = 0;
+                dailyTotals[d] += (parseFloat(item.cash_amount) || 0) + (parseFloat(item.card_amount) || 0);
+            });
+            
+            const sortedDates = Object.keys(dailyTotals).sort((a,b) => new Date(a) - new Date(b));
+            const recentDates = sortedDates.slice(-30);
+            
+            const labels = recentDates.map(d => {
+                const dateObj = new Date(d);
+                const dd = String(dateObj.getDate()).padStart(2, '0');
+                const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+                return `${dd}/${mm}`;
+            });
+            
+            const chartData = recentDates.map(d => dailyTotals[d]);
+
+            if (accountingChartInstance) {
+                accountingChartInstance.destroy();
+            }
+
+            accountingChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Gains Totaux (€)',
+                        data: chartData,
+                        borderColor: '#d97743',
+                        backgroundColor: 'rgba(217, 119, 67, 0.1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#d97743',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
         }
 
         function calculateAccountingStats(data) {
