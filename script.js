@@ -179,5 +179,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    loadCMS();
+    // Load unified footer
+    async function loadFooter() {
+        const placeholder = document.getElementById('footer-placeholder');
+        if (!placeholder) return;
+        try {
+            const response = await fetch('/footer.html');
+            if (!response.ok) return;
+            const html = await response.text();
+            placeholder.outerHTML = html;
+        } catch (e) {
+            console.error('Failed to load footer:', e);
+        }
+    }
+    
+    loadFooter().then(() => {
+        loadCMS(); // Load CMS after footer is loaded so footer CMS tags are populated
+    });
 });
