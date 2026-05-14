@@ -140,7 +140,7 @@ async function initDB() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS accounting (
         id SERIAL PRIMARY KEY,
-        date DATE NOT NULL,
+        date DATE NOT NULL UNIQUE,
         cash_amount NUMERIC(10, 2) DEFAULT 0,
         card_amount NUMERIC(10, 2) DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -262,12 +262,19 @@ app.get('/api/cms', async (req, res) => {
 app.post('/api/cms', async (req, res) => {
   const content = req.body;
   const keys = Object.keys(content);
+  const hiddenKeys = ['mailjet_api_key', 'mailjet_api_secret', 'stripe_secret_key'];
   
   try {
     // Basic upsert logic
     await pool.query('BEGIN');
     for (const key of keys) {
       const value = content[key];
+      
+      // Prevent wiping out secret keys if the frontend sends an empty string
+      if (hiddenKeys.includes(key) && (!value || value.trim() === '')) {
+        continue;
+      }
+      
       await pool.query(
         `INSERT INTO cms_content (key, value) VALUES ($1, $2) 
          ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
@@ -797,11 +804,15 @@ app.post('/api/accounting', async (req, res) => {
   try {
     const { date, cash_amount, card_amount } = req.body;
     const result = await pool.query(
-      "INSERT INTO accounting (date, cash_amount, card_amount) VALUES ($1, $2, $3) RETURNING *",
+      `INSERT INTO accounting (date, cash_amount, card_amount) 
+       VALUES ($1, $2, $3) 
+       ON CONFLICT (date) DO UPDATE SET cash_amount = EXCLUDED.cash_amount, card_amount = EXCLUDED.card_amount 
+       RETURNING *`,
       [date, cash_amount, card_amount]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Database error' });
   }
 });
