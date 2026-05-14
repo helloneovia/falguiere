@@ -837,7 +837,9 @@
                     return;
                 }
 
-                tbody.innerHTML = data.map(item => `
+                tbody.innerHTML = data.map(item => {
+                    const imgHtml = item.image ? `<br><a href="${item.image}" target="_blank" style="font-size: 0.8em; color: var(--primary);">🖼️ Voir l'image jointe</a>` : '';
+                    return `
                     <tr>
                         <td data-label="Date"><span class="badge-date">${formatDate(item.date)}</span></td>
                         <td data-label="Auteur">
@@ -847,12 +849,13 @@
                         <td data-label="Projet" style="max-width: 400px;">
                             <strong style="display:block;margin-bottom:0.3rem;">${item.title}</strong>
                             <span style="white-space: pre-wrap; font-size: 0.9em;">${item.description}</span>
+                            ${imgHtml}
                         </td>
                         <td data-label="Actions">
                             <button class="btn-sm btn-danger" onclick="deleteProject(${item.id})">Supprimer</button>
                         </td>
                     </tr>
-                `).join('');
+                `}).join('');
             } catch (err) {
                 tbody.innerHTML = '<tr><td colspan="4" class="empty-state" style="color: #ef4444;">Erreur de chargement.</td></tr>';
             }

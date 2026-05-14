@@ -124,9 +124,14 @@ async function initDB() {
         email VARCHAR(255) NOT NULL,
         title VARCHAR(255) NOT NULL,
         description TEXT NOT NULL,
+        image VARCHAR(255),
         date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    
+    // Ajout de la colonne image si elle n'existe pas
+    await pool.query(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS image VARCHAR(255);`).catch(e => {});
+
     console.log('Database tables initialized successfully');
   } catch (err) {
     console.error('Error initializing database tables:', err);
@@ -709,12 +714,16 @@ app.get('/api/projects', async (req, res) => {
   }
 });
 
-app.post('/api/projects', async (req, res) => {
+app.post('/api/projects', upload.single('image'), async (req, res) => {
   try {
     const { name, email, title, description } = req.body;
+    let imageUrl = null;
+    if (req.file) {
+      imageUrl = '/uploads/' + req.file.filename;
+    }
     const result = await pool.query(
-      "INSERT INTO projects (name, email, title, description, date) VALUES ($1, $2, $3, $4, NOW()) RETURNING *",
-      [name, email, title, description]
+      "INSERT INTO projects (name, email, title, description, image, date) VALUES ($1, $2, $3, $4, $5, NOW()) RETURNING *",
+      [name, email, title, description, imageUrl]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
