@@ -190,11 +190,11 @@
                     <div id="payment-element">
                         <!-- Stripe Elements sera inséré ici -->
                     </div>
-                    <button id="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.2rem; margin-top: 1rem;">
+                    <button id="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.2rem; margin-top: 1.5rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; border-radius: var(--radius-md);">
                         <div class="spinner" id="spinner"></div>
-                        <span id="button-text">Payer maintenant</span>
+                        <span id="button-text">JE DONNE</span>
                     </button>
-                    <div id="payment-message" style="color: #ef4444; margin-top: 1rem; text-align: center;"></div>
+                    <div id="payment-message" style="color: #ef4444; margin-top: 1rem; text-align: center; font-weight: 600;"></div>
                 </form>
 
                 <div class="success-message" id="successMessage">
@@ -264,7 +264,36 @@
 
                 const clientSecret = data.clientSecret;
 
-                const appearance = { theme: 'stripe' };
+                const appearance = { 
+                    theme: 'stripe',
+                    variables: {
+                        colorPrimary: '#d97743',
+                        colorBackground: '#ffffff',
+                        colorText: '#1e1e24',
+                        colorDanger: '#ef4444',
+                        fontFamily: 'Outfit, sans-serif',
+                        spacingUnit: '4px',
+                        borderRadius: '12px',
+                        gridRowSpacing: '16px'
+                    },
+                    rules: {
+                        '.Input': {
+                            padding: '12px 14px',
+                            boxShadow: 'none',
+                            border: '2px solid #e2e8f0',
+                            transition: 'border-color 0.2s, box-shadow 0.2s'
+                        },
+                        '.Input:focus': {
+                            borderColor: '#d97743',
+                            boxShadow: '0 0 0 3px rgba(217, 119, 67, 0.1)'
+                        },
+                        '.Label': {
+                            fontWeight: '600',
+                            color: '#1e1e24',
+                            marginBottom: '6px'
+                        }
+                    }
+                };
                 elements = stripe.elements({ appearance, clientSecret });
 
                 const paymentElementOptions = { layout: "tabs" };
