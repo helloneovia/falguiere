@@ -1,4 +1,4 @@
-const CACHE_NAME = 'falguiere-cache-v5';
+const CACHE_NAME = 'falguiere-cache-v6';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -34,25 +34,52 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          // Stale-while-revalidate for HTML files to always get the latest in background
-          if (event.request.destination === 'document' || event.request.url.includes('.html')) {
-             fetch(event.request).then(fetchRes => {
-                 caches.open(CACHE_NAME).then(cache => cache.put(event.request, fetchRes));
-             }).catch(() => {});
-          }
+  // Stratégie "Network First" pour le HTML, CSS, JS et la navigation
+  if (
+    event.request.mode === 'navigate' || 
+    event.request.destination === 'document' || 
+    event.request.url.includes('.html') || 
+    event.request.url.includes('.css') || 
+    event.request.url.includes('.js')
+  ) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Met en cache la nouvelle version récupérée sur le réseau
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseClone);
+          });
           return response;
-        }
-        return fetch(event.request).catch(() => {
-          if (event.request.mode === 'navigate') {
-            return caches.match('/');
+        })
+        .catch(() => {
+          // En cas d'échec (hors ligne), on cherche dans le cache
+          return caches.match(event.request).then(response => {
+            if (response) {
+              return response;
+            }
+            if (event.request.mode === 'navigate') {
+              return caches.match('/');
+            }
+          });
+        })
+    );
+  } else {
+    // Stratégie "Cache First" pour le reste (images, polices, etc.)
+    event.respondWith(
+      caches.match(event.request)
+        .then(response => {
+          if (response) {
+            return response;
           }
-        });
-      })
-  );
+          return fetch(event.request).then(fetchRes => {
+            const fetchResClone = fetchRes.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, fetchResClone));
+            return fetchRes;
+          }).catch(() => {});
+        })
+    );
+  }
 });
 
 self.addEventListener('activate', event => {
