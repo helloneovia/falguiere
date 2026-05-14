@@ -147,6 +147,7 @@
             <div class="sidebar-menu-collapse" id="adminMenuCollapse">
                 <ul class="admin-nav">
                     <li><a onclick="switchTab('dashboard')" id="nav-dashboard" class="active">🏠 Tableau de bord</a></li>
+                    <li><a onclick="switchTab('accounting')" id="nav-accounting">💶 Comptabilité</a></li>
                     <li><a onclick="switchTab('newsletters')" id="nav-newsletters">📰 Newsletters</a></li>
                     <li><a onclick="switchTab('subscribers')" id="nav-subscribers">👥 Abonnés</a></li>
                     <li><a onclick="switchTab('cms')" id="nav-cms">✏️ Éditeur de Site</a></li>
@@ -241,6 +242,76 @@
                     </table>
                 </div>
             </div>
+                </div>
+            </div>
+
+            <!-- TAB 1.5: Accounting -->
+            <div id="tab-accounting" class="tab-content">
+                <h1 style="margin-bottom: 2rem;">Comptabilité</h1>
+                
+                <!-- Statistiques -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <div class="admin-card" style="padding: 1.5rem; text-align: center; border-top: 4px solid var(--primary);">
+                        <h3 style="font-size: 1rem; color: var(--dark-muted); margin-bottom: 0.5rem;">7 Derniers Jours</h3>
+                        <p style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0;" id="statWeeklyTotal">0.00 €</p>
+                        <div style="font-size: 0.8rem; margin-top: 0.5rem; color: #64748b;">
+                            Espèces: <span id="statWeeklyCash">0.00 €</span> | Carte: <span id="statWeeklyCard">0.00 €</span>
+                        </div>
+                    </div>
+                    <div class="admin-card" style="padding: 1.5rem; text-align: center; border-top: 4px solid #3b82f6;">
+                        <h3 style="font-size: 1rem; color: var(--dark-muted); margin-bottom: 0.5rem;">Mois en cours</h3>
+                        <p style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0;" id="statMonthlyTotal">0.00 €</p>
+                        <div style="font-size: 0.8rem; margin-top: 0.5rem; color: #64748b;">
+                            Espèces: <span id="statMonthlyCash">0.00 €</span> | Carte: <span id="statMonthlyCard">0.00 €</span>
+                        </div>
+                    </div>
+                    <div class="admin-card" style="padding: 1.5rem; text-align: center; border-top: 4px solid #10b981;">
+                        <h3 style="font-size: 1rem; color: var(--dark-muted); margin-bottom: 0.5rem;">Total Année</h3>
+                        <p style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0;" id="statYearlyTotal">0.00 €</p>
+                        <div style="font-size: 0.8rem; margin-top: 0.5rem; color: #64748b;">
+                            Espèces: <span id="statYearlyCash">0.00 €</span> | Carte: <span id="statYearlyCard">0.00 €</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Formulaire et Liste -->
+                <div class="admin-card">
+                    <h2>
+                        <span>💶 Saisie des Gains</span>
+                    </h2>
+                    <div class="form-row-responsive" style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+                        <input type="hidden" id="accountingId">
+                        <div style="flex: 1; min-width: 150px;">
+                            <label style="display: block; font-size: 0.9rem; margin-bottom: 0.3rem;">Date</label>
+                            <input type="date" id="accDate" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: var(--radius-md);">
+                        </div>
+                        <div style="flex: 1; min-width: 150px;">
+                            <label style="display: block; font-size: 0.9rem; margin-bottom: 0.3rem;">Espèces (€)</label>
+                            <input type="number" step="0.01" id="accCash" placeholder="0.00" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: var(--radius-md);">
+                        </div>
+                        <div style="flex: 1; min-width: 150px;">
+                            <label style="display: block; font-size: 0.9rem; margin-bottom: 0.3rem;">Carte (€)</label>
+                            <input type="number" step="0.01" id="accCard" placeholder="0.00" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: var(--radius-md);">
+                        </div>
+                        <button class="btn btn-primary form-btn-responsive" onclick="saveAccounting()" style="padding: 0.75rem 1.5rem;">Enregistrer</button>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Espèces</th>
+                                    <th>Carte</th>
+                                    <th>Total Journalier</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="accountingTableBody">
+                                <!-- Injected by JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -437,6 +508,7 @@
             renderDocuments();
             renderSubscribers();
             renderNewsletters();
+            renderAccounting();
         }
 
         // Check on load
@@ -780,6 +852,149 @@
                 `).join('');
             } catch (err) {
                 tbody.innerHTML = '<tr><td colspan="4" class="empty-state" style="color: #ef4444;">Erreur.</td></tr>';
+            }
+        }
+
+        // --- Accounting Logic ---
+        let globalAccounting = [];
+
+        async function renderAccounting() {
+            const tbody = document.getElementById('accountingTableBody');
+            document.getElementById('accDate').valueAsDate = new Date(); // Default today
+            
+            try {
+                const response = await fetch('/api/accounting');
+                if (!response.ok) throw new Error('Erreur API');
+                const data = await response.json();
+                globalAccounting = data;
+                
+                calculateAccountingStats(data);
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Aucune entrée comptable.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.map(item => {
+                    const cash = parseFloat(item.cash_amount) || 0;
+                    const card = parseFloat(item.card_amount) || 0;
+                    const total = cash + card;
+                    const displayDate = new Date(item.date).toLocaleDateString('fr-FR');
+                    
+                    return `
+                    <tr>
+                        <td data-label="Date"><strong>${displayDate}</strong></td>
+                        <td data-label="Espèces">${cash.toFixed(2)} €</td>
+                        <td data-label="Carte">${card.toFixed(2)} €</td>
+                        <td data-label="Total"><strong style="color: var(--primary);">${total.toFixed(2)} €</strong></td>
+                        <td data-label="Actions">
+                            <button class="btn-sm" style="background:var(--dark-muted);color:white;border:none;cursor:pointer;" onclick="editAccounting(${item.id})">Éditer</button>
+                            <button class="btn-sm btn-danger" onclick="deleteAccounting(${item.id})">Supprimer</button>
+                        </td>
+                    </tr>
+                `}).join('');
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state" style="color: #ef4444;">Erreur lors du chargement.</td></tr>';
+            }
+        }
+
+        function calculateAccountingStats(data) {
+            const now = new Date();
+            const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            const startOfYear = new Date(now.getFullYear(), 0, 1);
+
+            let stats = {
+                week: { cash: 0, card: 0 },
+                month: { cash: 0, card: 0 },
+                year: { cash: 0, card: 0 }
+            };
+
+            data.forEach(item => {
+                const itemDate = new Date(item.date);
+                const cash = parseFloat(item.cash_amount) || 0;
+                const card = parseFloat(item.card_amount) || 0;
+
+                if (itemDate >= startOfWeek) {
+                    stats.week.cash += cash;
+                    stats.week.card += card;
+                }
+                if (itemDate >= startOfMonth) {
+                    stats.month.cash += cash;
+                    stats.month.card += card;
+                }
+                if (itemDate >= startOfYear) {
+                    stats.year.cash += cash;
+                    stats.year.card += card;
+                }
+            });
+
+            // Update UI
+            document.getElementById('statWeeklyCash').textContent = stats.week.cash.toFixed(2) + ' €';
+            document.getElementById('statWeeklyCard').textContent = stats.week.card.toFixed(2) + ' €';
+            document.getElementById('statWeeklyTotal').textContent = (stats.week.cash + stats.week.card).toFixed(2) + ' €';
+
+            document.getElementById('statMonthlyCash').textContent = stats.month.cash.toFixed(2) + ' €';
+            document.getElementById('statMonthlyCard').textContent = stats.month.card.toFixed(2) + ' €';
+            document.getElementById('statMonthlyTotal').textContent = (stats.month.cash + stats.month.card).toFixed(2) + ' €';
+
+            document.getElementById('statYearlyCash').textContent = stats.year.cash.toFixed(2) + ' €';
+            document.getElementById('statYearlyCard').textContent = stats.year.card.toFixed(2) + ' €';
+            document.getElementById('statYearlyTotal').textContent = (stats.year.cash + stats.year.card).toFixed(2) + ' €';
+        }
+
+        async function saveAccounting() {
+            const id = document.getElementById('accountingId').value;
+            const date = document.getElementById('accDate').value;
+            const cash = parseFloat(document.getElementById('accCash').value) || 0;
+            const card = parseFloat(document.getElementById('accCard').value) || 0;
+
+            if (!date) return alert('La date est requise');
+
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/accounting/${id}` : '/api/accounting';
+
+            try {
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ date, cash_amount: cash, card_amount: card })
+                });
+                if (!response.ok) throw new Error('Erreur de sauvegarde');
+                
+                // Reset form
+                document.getElementById('accountingId').value = '';
+                document.getElementById('accDate').valueAsDate = new Date();
+                document.getElementById('accCash').value = '';
+                document.getElementById('accCard').value = '';
+                
+                renderAccounting();
+            } catch (err) {
+                console.error(err);
+                alert("Erreur lors de l'enregistrement");
+            }
+        }
+
+        function editAccounting(id) {
+            const item = globalAccounting.find(a => a.id === id);
+            if (item) {
+                document.getElementById('accountingId').value = item.id;
+                document.getElementById('accDate').value = item.date.split('T')[0];
+                document.getElementById('accCash').value = item.cash_amount;
+                document.getElementById('accCard').value = item.card_amount;
+                window.scrollTo(0, document.getElementById('accDate').offsetTop - 100);
+            }
+        }
+
+        async function deleteAccounting(id) {
+            if (confirm("Êtes-vous sûr de vouloir supprimer cette entrée comptable ?")) {
+                try {
+                    await fetch(`/api/accounting/${id}`, { method: 'DELETE' });
+                    renderAccounting();
+                } catch (err) {
+                    alert("Erreur lors de la suppression");
+                }
             }
         }
 
