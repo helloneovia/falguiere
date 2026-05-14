@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Découvrez et soumettez vos idées de projets pour le quartier Falguière.">
+    <title>Idées de Projets | Association Falguière</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .projects-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%);
+            color: white;
+            padding: 8rem 0 4rem;
+            text-align: center;
+        }
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        .project-card {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border-top: 4px solid var(--primary);
+        }
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+        .project-date {
+            font-size: 0.85rem;
+            color: var(--dark-muted);
+            margin-bottom: 0.5rem;
+        }
+        .project-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 1rem;
+        }
+        .project-desc {
+            font-size: 0.95rem;
+            color: var(--dark-muted);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            white-space: pre-wrap;
+        }
+        .project-author {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        .submit-section {
+            background: #f8fafc;
+            padding: 4rem 0;
+            margin-top: 4rem;
+        }
+        .submit-form {
+            background: white;
+            padding: 3rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--radius-md);
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <span class="logo-accent">FAL</span>GUIÈRE
+            </a>
+            <div class="nav-links">
+                <a href="index.html#mission">Notre Mission</a>
+                <a href="index.html#actions">Nos Actions</a>
+                <a href="projets.html" class="active">Projets</a>
+                <a href="index.html#adhesion" class="btn btn-primary">Nous Rejoindre</a>
+                <a href="don.html" class="btn btn-outline">Faire un don</a>
+            </div>
+            <button class="mobile-menu-btn" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu">
+        <a href="index.html#mission" class="mobile-link">Notre Mission</a>
+        <a href="index.html#actions" class="mobile-link">Nos Actions</a>
+        <a href="projets.html" class="mobile-link">Projets</a>
+        <a href="index.html#adhesion" class="btn btn-primary w-full text-center mt-4 mobile-link">Nous Rejoindre</a>
+        <a href="don.html" class="btn btn-outline w-full text-center mt-2 mobile-link">Faire un don</a>
+    </div>
+
+    <!-- Header -->
+    <header class="projects-header">
+        <div class="container">
+            <h1 style="font-size: 3rem; margin-bottom: 1rem;">Idées de Projets</h1>
+            <p style="font-size: 1.2rem; opacity: 0.9; max-width: 600px; margin: 0 auto;">Découvrez les initiatives de nos voisins pour améliorer la vie dans le quartier Falguière.</p>
+        </div>
+    </header>
+
+    <!-- Projects List -->
+    <section class="section">
+        <div class="container">
+            <div id="projects-container" class="projects-grid">
+                <!-- Chargé dynamiquement -->
+                <p style="text-align: center; width: 100%; color: var(--dark-muted);">Chargement des projets...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Submit Section -->
+    <section class="submit-section" id="soumettre">
+        <div class="container">
+            <div class="text-center" style="margin-bottom: 3rem;">
+                <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">Vous avez une idée ?</h2>
+                <p style="color: var(--dark-muted); max-width: 600px; margin: 0 auto;">Proposez votre projet pour le quartier. Il sera publié sur cette page après votre soumission.</p>
+            </div>
+
+            <form class="submit-form" id="submitProjectForm">
+                <div id="projectSuccess" style="display: none; background: #dcfce7; color: #166534; padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; text-align: center;">
+                    Votre idée de projet a bien été soumise ! Merci pour votre contribution.
+                </div>
+                <div id="projectError" style="display: none; background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; text-align: center;">
+                    Une erreur est survenue. Veuillez réessayer.
+                </div>
+
+                <div class="form-group">
+                    <label for="pName">Votre Nom</label>
+                    <input type="text" id="pName" required placeholder="Ex: Jean Dupont">
+                </div>
+                <div class="form-group">
+                    <label for="pEmail">Votre Email (non publié)</label>
+                    <input type="email" id="pEmail" required placeholder="jean@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="pTitle">Titre du projet</label>
+                    <input type="text" id="pTitle" required placeholder="Ex: Création d'un jardin partagé">
+                </div>
+                <div class="form-group">
+                    <label for="pDesc">Description du projet</label>
+                    <textarea id="pDesc" rows="5" required placeholder="Décrivez votre idée en détail..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem;">Soumettre mon idée</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer Placeholder -->
+    <div id="footer-placeholder"></div>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProjects();
+
+            const form = document.getElementById('submitProjectForm');
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = form.querySelector('button[type="submit"]');
+                const originalText = btn.textContent;
+                btn.textContent = 'Envoi en cours...';
+                btn.disabled = true;
+
+                document.getElementById('projectSuccess').style.display = 'none';
+                document.getElementById('projectError').style.display = 'none';
+
+                const payload = {
+                    name: document.getElementById('pName').value.trim(),
+                    email: document.getElementById('pEmail').value.trim(),
+                    title: document.getElementById('pTitle').value.trim(),
+                    description: document.getElementById('pDesc').value.trim()
+                };
+
+                try {
+                    const res = await fetch('/api/projects', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (!res.ok) throw new Error();
+                    
+                    document.getElementById('projectSuccess').style.display = 'block';
+                    form.reset();
+                    loadProjects(); // Reload the list
+                } catch (err) {
+                    document.getElementById('projectError').style.display = 'block';
+                } finally {
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
+            });
+        });
+
+        async function loadProjects() {
+            const container = document.getElementById('projects-container');
+            try {
+                const response = await fetch('/api/projects');
+                const data = await response.json();
+
+                if (data.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; width: 100%; color: var(--dark-muted); grid-column: 1 / -1;">Soyez le premier à proposer une idée pour le quartier Falguière !</p>';
+                    return;
+                }
+
+                container.innerHTML = data.map(p => {
+                    const d = new Date(p.date).toLocaleDateString('fr-FR');
+                    return `
+                        <div class="project-card">
+                            <div class="project-date">Publié le ${d}</div>
+                            <h3 class="project-title">${p.title.replace(/</g, "&lt;")}</h3>
+                            <div class="project-desc">${p.description.replace(/</g, "&lt;")}</div>
+                            <div class="project-author">Par ${p.name.replace(/</g, "&lt;")}</div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                container.innerHTML = '<p style="text-align: center; width: 100%; color: #ef4444;">Impossible de charger les projets pour le moment.</p>';
+            }
+        }
+    </script>
+</body>
+</html>

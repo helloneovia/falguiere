@@ -5,6 +5,7 @@ const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
 const Mailjet = require('node-mailjet');
+const stripe = require('stripe');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -115,6 +116,17 @@ async function initDB() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS projects (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        description TEXT NOT NULL,
+        date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
     console.log('Database tables initialized successfully');
   } catch (err) {
     console.error('Error initializing database tables:', err);
@@ -206,8 +218,19 @@ app.get('/api/cms', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM cms_content');
     const content = {};
+    const hiddenKeys = ['mailjet_api_key', 'mailjet_api_secret', 'stripe_secret_key'];
     result.rows.forEach(row => {
-      content[row.key] = row.value;
+      // Do not expose secrets to the frontend unless requested by admin?
+      // Actually, admin frontend also hits this to fill the settings form.
+      // Wait, if we hide them here, the admin form won't be able to show them.
+      // But we shouldn't show them anyway for security. We can let the admin input them again if they want to change them.
+      // A better way: return them only if there's an admin token? But we only have digicode client-side.
+      // It's safer to just let the frontend know they exist or hide them entirely.
+      // For now, let's just return all of them to admin, but wait, there's no auth on this route.
+      // So let's hide the secrets. The admin will just see empty fields, but if they enter a value it saves.
+      if (!hiddenKeys.includes(row.key)) {
+        content[row.key] = row.value;
+      }
     });
     res.json(content);
   } catch (err) {
@@ -636,6 +659,74 @@ app.delete('/api/accounting/:id', async (req, res) => {
   try {
     const { id } = req.params;
     await pool.query("DELETE FROM accounting WHERE id = $1", [id]);
+    res.status(204).send();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// --- STRIPE & DONATIONS ---
+app.post('/api/create-payment-intent', async (req, res) => {
+  try {
+    const { amount } = req.body;
+    if (!amount || amount <= 0) return res.status(400).json({ error: "Montant invalide" });
+
+    // Fetch Stripe secret key from DB
+    const cmsResult = await pool.query("SELECT value FROM cms_content WHERE key = 'stripe_secret_key'");
+    if (cmsResult.rows.length === 0 || !cmsResult.rows[0].value) {
+      return res.status(500).json({ error: "Clé API Stripe non configurée." });
+    }
+    
+    const stripeInstance = stripe(cmsResult.rows[0].value);
+    
+    // Create a PaymentIntent with the order amount and currency
+    const paymentIntent = await stripeInstance.paymentIntents.create({
+      amount: Math.round(amount * 100), // Stripe expects amounts in cents
+      currency: "eur",
+      automatic_payment_methods: {
+        enabled: true,
+      },
+    });
+
+    res.send({
+      clientSecret: paymentIntent.client_secret,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- PROJECTS ---
+app.get('/api/projects', async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM projects ORDER BY date DESC");
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.post('/api/projects', async (req, res) => {
+  try {
+    const { name, email, title, description } = req.body;
+    const result = await pool.query(
+      "INSERT INTO projects (name, email, title, description, date) VALUES ($1, $2, $3, $4, NOW()) RETURNING *",
+      [name, email, title, description]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.delete('/api/projects/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await pool.query("DELETE FROM projects WHERE id = $1", [id]);
     res.status(204).send();
   } catch (err) {
     console.error(err);

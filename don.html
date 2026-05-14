@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Faites un don à l'Association Falguière pour soutenir nos actions dans le quartier.">
+    <title>Soutenir l'Association | Association Falguière</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        .donate-section {
+            padding: 8rem 0 4rem;
+            min-height: 100vh;
+            background: var(--gray-bg);
+        }
+        .donate-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 3rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+        }
+        .amount-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .amount-btn {
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius-md);
+            background: transparent;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--dark);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .amount-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .amount-btn.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .custom-amount-wrapper {
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+        }
+        .custom-amount-wrapper span {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        .custom-amount-input {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.2rem;
+            border: 2px solid #e2e8f0;
+            border-radius: var(--radius-md);
+        }
+        #payment-form {
+            margin-top: 2rem;
+            display: none;
+        }
+        #payment-element {
+            margin-bottom: 1.5rem;
+        }
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+        }
+        .success-icon {
+            font-size: 4rem;
+            color: #10b981;
+            margin-bottom: 1rem;
+        }
+        /* Loader */
+        .spinner {
+            display: none;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <span class="logo-accent">FAL</span>GUIÈRE
+            </a>
+            <div class="nav-links">
+                <a href="index.html#mission">Notre Mission</a>
+                <a href="index.html#actions">Nos Actions</a>
+                <a href="projets.html">Projets</a>
+                <a href="index.html#adhesion" class="btn btn-primary">Nous Rejoindre</a>
+                <a href="don.html" class="btn btn-outline active">Faire un don</a>
+            </div>
+            <button class="mobile-menu-btn" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu">
+        <a href="index.html#mission" class="mobile-link">Notre Mission</a>
+        <a href="index.html#actions" class="mobile-link">Nos Actions</a>
+        <a href="projets.html" class="mobile-link">Projets</a>
+        <a href="index.html#adhesion" class="btn btn-primary w-full text-center mt-4 mobile-link">Nous Rejoindre</a>
+        <a href="don.html" class="btn btn-outline w-full text-center mt-2 mobile-link">Faire un don</a>
+    </div>
+
+    <!-- Donate Section -->
+    <section class="donate-section">
+        <div class="container">
+            <div class="donate-container" id="donateContainer">
+                <h1 style="text-align: center; margin-bottom: 1rem;">Soutenir Falguière</h1>
+                <p style="text-align: center; color: var(--dark-muted); margin-bottom: 2rem;">Votre don permet de financer nos actions solidaires (distributions, aide scolaire, aménagement urbain) dans le 15ème arrondissement.</p>
+                
+                <div id="amountSelection">
+                    <label style="display: block; font-weight: 600; margin-bottom: 1rem;">Choisissez un montant :</label>
+                    <div class="amount-selector">
+                        <button class="amount-btn" onclick="selectAmount(10, this)">10 €</button>
+                        <button class="amount-btn selected" onclick="selectAmount(20, this)">20 €</button>
+                        <button class="amount-btn" onclick="selectAmount(50, this)">50 €</button>
+                    </div>
+                    
+                    <div class="custom-amount-wrapper">
+                        <span>Montant libre : </span>
+                        <input type="number" id="customAmount" class="custom-amount-input" min="1" placeholder="Ex: 30" oninput="clearSelection()">
+                    </div>
+
+                    <button id="startPaymentBtn" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.2rem;" onclick="initializePayment()">
+                        Valider ce montant
+                    </button>
+                    <div id="initError" style="color: #ef4444; margin-top: 1rem; text-align: center;"></div>
+                </div>
+
+                <form id="payment-form">
+                    <div id="payment-element">
+                        <!-- Stripe Elements sera inséré ici -->
+                    </div>
+                    <button id="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.2rem; margin-top: 1rem;">
+                        <div class="spinner" id="spinner"></div>
+                        <span id="button-text">Payer maintenant</span>
+                    </button>
+                    <div id="payment-message" style="color: #ef4444; margin-top: 1rem; text-align: center;"></div>
+                </form>
+
+                <div class="success-message" id="successMessage">
+                    <div class="success-icon">❤️</div>
+                    <h2>Merci pour votre don !</h2>
+                    <p style="color: var(--dark-muted); margin-top: 1rem;">Votre paiement a été traité avec succès. Grâce à vous, nous pouvons continuer nos actions dans le quartier.</p>
+                    <a href="index.html" class="btn btn-outline" style="margin-top: 2rem;">Retour à l'accueil</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Placeholder -->
+    <div id="footer-placeholder"></div>
+
+    <script src="script.js"></script>
+    <script>
+        let selectedAmount = 20; // Default
+        let stripe;
+        let elements;
+
+        function selectAmount(amount, btnElement) {
+            selectedAmount = amount;
+            document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('selected'));
+            if(btnElement) btnElement.classList.add('selected');
+            document.getElementById('customAmount').value = '';
+        }
+
+        function clearSelection() {
+            document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('selected'));
+            selectedAmount = parseFloat(document.getElementById('customAmount').value);
+        }
+
+        async function initializePayment() {
+            const amount = parseFloat(document.getElementById('customAmount').value) || selectedAmount;
+            if (!amount || amount < 1) {
+                document.getElementById('initError').textContent = "Veuillez entrer un montant valide (minimum 1€).";
+                return;
+            }
+            document.getElementById('initError').textContent = "";
+            const btn = document.getElementById('startPaymentBtn');
+            btn.textContent = "Chargement...";
+            btn.disabled = true;
+
+            try {
+                // 1. Fetch Stripe Public Key from CMS
+                const cmsRes = await fetch('/api/cms');
+                const cmsData = await cmsRes.json();
+                const pk = cmsData['stripe_public_key'];
+                
+                if (!pk) {
+                    throw new Error("Les paiements ne sont pas encore configurés (Clé publique Stripe manquante).");
+                }
+
+                // 2. Initialize Stripe
+                stripe = Stripe(pk);
+
+                // 3. Create Payment Intent
+                const response = await fetch("/api/create-payment-intent", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ amount }),
+                });
+                
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+
+                const clientSecret = data.clientSecret;
+
+                const appearance = { theme: 'stripe' };
+                elements = stripe.elements({ appearance, clientSecret });
+
+                const paymentElementOptions = { layout: "tabs" };
+                const paymentElement = elements.create("payment", paymentElementOptions);
+                
+                paymentElement.mount("#payment-element");
+
+                // Switch UI
+                document.getElementById('amountSelection').style.display = 'none';
+                document.getElementById('payment-form').style.display = 'block';
+
+            } catch (error) {
+                document.getElementById('initError').textContent = error.message;
+                btn.textContent = "Valider ce montant";
+                btn.disabled = false;
+            }
+        }
+
+        document.querySelector("#payment-form").addEventListener("submit", handleSubmit);
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+            setLoading(true);
+
+            const { error } = await stripe.confirmPayment({
+                elements,
+                confirmParams: {
+                    // return_url: window.location.href + "?success=true",
+                    // For SPA feeling without redirect, we handle it directly if we don't use redirects
+                    // But Stripe requires a return_url for some payment methods.
+                    // We'll set it just in case, but if it completes on the page, we catch the success below if we used confirmCardPayment,
+                    // However confirmPayment always redirects for Elements unless we use a specific flow.
+                    return_url: window.location.href.split('?')[0] + "?payment_intent_client_secret={PAYMENT_INTENT_CLIENT_SECRET}",
+                },
+            });
+
+            if (error) {
+                if (error.type === "card_error" || error.type === "validation_error") {
+                    showMessage(error.message);
+                } else {
+                    showMessage("Une erreur inattendue est survenue.");
+                }
+            }
+
+            setLoading(false);
+        }
+
+        // Check for return_url params
+        async function checkStatus() {
+            const clientSecret = new URLSearchParams(window.location.search).get(
+                "payment_intent_client_secret"
+            );
+
+            if (!clientSecret) return;
+
+            // Fetch Stripe PK again just to check status
+            const cmsRes = await fetch('/api/cms');
+            const cmsData = await cmsRes.json();
+            const pk = cmsData['stripe_public_key'];
+            if(!pk) return;
+
+            const stripeLocal = Stripe(pk);
+
+            const { paymentIntent } = await stripeLocal.retrievePaymentIntent(clientSecret);
+
+            if (paymentIntent.status === "succeeded") {
+                document.getElementById('amountSelection').style.display = 'none';
+                document.getElementById('payment-form').style.display = 'none';
+                document.getElementById('successMessage').style.display = 'block';
+            } else {
+                showMessage("Le paiement n'a pas pu être validé : " + paymentIntent.status);
+            }
+        }
+
+        function showMessage(messageText) {
+            const messageContainer = document.querySelector("#payment-message");
+            messageContainer.style.display = "block";
+            messageContainer.textContent = messageText;
+        }
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                document.querySelector("#submit").disabled = true;
+                document.querySelector("#spinner").style.display = "block";
+                document.querySelector("#button-text").style.display = "none";
+            } else {
+                document.querySelector("#submit").disabled = false;
+                document.querySelector("#spinner").style.display = "none";
+                document.querySelector("#button-text").style.display = "block";
+            }
+        }
+
+        // Run on load
+        checkStatus();
+    </script>
+</body>
+</html>

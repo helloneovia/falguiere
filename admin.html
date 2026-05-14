@@ -150,6 +150,7 @@
                     <li><a onclick="switchTab('accounting')" id="nav-accounting">💶 Comptabilité</a></li>
                     <li><a onclick="switchTab('newsletters')" id="nav-newsletters">📰 Newsletters</a></li>
                     <li><a onclick="switchTab('subscribers')" id="nav-subscribers">👥 Abonnés</a></li>
+                    <li><a onclick="switchTab('projects')" id="nav-projects">💡 Idées Projets</a></li>
                     <li><a onclick="switchTab('cms')" id="nav-cms">✏️ Éditeur de Site</a></li>
                     <li><a onclick="switchTab('settings')" id="nav-settings">⚙️ Paramètres API</a></li>
                     <li style="margin-top: 2rem;"><a onclick="logout()" id="nav-logout" style="color: #ef4444; cursor: pointer;">🚪 Déconnexion</a></li>
@@ -411,6 +412,33 @@
             </div>
             </div>
 
+            <!-- TAB 4.5: Projects -->
+            <div id="tab-projects" class="tab-content">
+                <h1 style="margin-bottom: 2rem;">Idées de Projets</h1>
+                <div class="admin-card">
+                    <h2>
+                        <span>💡 Projets soumis</span>
+                    </h2>
+                    <p style="margin-bottom: 2rem; font-size: 0.9rem; color: var(--dark-muted);">Retrouvez ici toutes les idées de projets soumises par les visiteurs. Elles apparaissent automatiquement sur le site public, mais vous pouvez les supprimer si besoin.</p>
+                    
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Auteur</th>
+                                    <th>Projet</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="projectsTableBody">
+                                <!-- Injected by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- TAB 5: Settings -->
             <div id="tab-settings" class="tab-content">
                 <h1 style="margin-bottom: 2rem;">Paramètres API</h1>
@@ -509,6 +537,7 @@
             renderSubscribers();
             renderNewsletters();
             renderAccounting();
+            renderProjects();
         }
 
         // Check on load
@@ -793,6 +822,50 @@
             if (confirm('Supprimer cet abonné ?')) {
                 await fetch(`/api/subscribers/${id}`, { method: 'DELETE' });
                 renderSubscribers();
+            }
+        }
+
+        // --- Projects Logic ---
+        async function renderProjects() {
+            const tbody = document.getElementById('projectsTableBody');
+            try {
+                const response = await fetch('/api/projects');
+                const data = await response.json();
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Aucun projet soumis pour le moment.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.map(item => `
+                    <tr>
+                        <td data-label="Date"><span class="badge-date">${formatDate(item.date)}</span></td>
+                        <td data-label="Auteur">
+                            <strong>${item.name}</strong><br>
+                            <a href="mailto:${item.email}" class="text-accent" style="font-size:0.9em;">${item.email}</a>
+                        </td>
+                        <td data-label="Projet" style="max-width: 400px;">
+                            <strong style="display:block;margin-bottom:0.3rem;">${item.title}</strong>
+                            <span style="white-space: pre-wrap; font-size: 0.9em;">${item.description}</span>
+                        </td>
+                        <td data-label="Actions">
+                            <button class="btn-sm btn-danger" onclick="deleteProject(${item.id})">Supprimer</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-state" style="color: #ef4444;">Erreur de chargement.</td></tr>';
+            }
+        }
+
+        async function deleteProject(id) {
+            if (confirm('Voulez-vous supprimer cette idée de projet du site ?')) {
+                try {
+                    await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+                    renderProjects();
+                } catch (err) {
+                    alert('Erreur lors de la suppression');
+                }
             }
         }
 
@@ -1231,6 +1304,8 @@
             { id: 'mailjet_api_secret', label: 'Clé Secrète Mailjet', type: 'text', default: '' },
             { id: 'mailjet_sender_email', label: 'Email Expéditeur Mailjet (vérifié)', type: 'text', default: 'contact@falguiere.org' },
             { id: 'mailjet_sender_name', label: 'Nom Expéditeur Mailjet', type: 'text', default: 'Association Falguière' },
+            { id: 'stripe_public_key', label: 'Clé Publique Stripe (pk_...)', type: 'text', default: '' },
+            { id: 'stripe_secret_key', label: 'Clé Secrète Stripe (sk_...)', type: 'text', default: '' },
             { id: 'footer-desc', label: 'Footer Description', type: 'textarea', default: `L'association pour le développement et la solidarité du quartier Falguière à Paris 15e.` }
         ];
 
@@ -1246,7 +1321,7 @@
                 const form = document.getElementById('settingsForm');
                 form.innerHTML = ''; 
                 
-                const settingsKeys = ['mailjet_api_key', 'mailjet_api_secret', 'mailjet_sender_email', 'mailjet_sender_name'];
+                const settingsKeys = ['mailjet_api_key', 'mailjet_api_secret', 'mailjet_sender_email', 'mailjet_sender_name', 'stripe_public_key', 'stripe_secret_key'];
                 
                 cmsFieldsConfig.filter(f => settingsKeys.includes(f.id)).forEach(field => {
                     const value = cmsData[field.id] || field.default;
@@ -1266,7 +1341,7 @@
 
         async function saveSettings() {
             const cmsData = {};
-            const settingsKeys = ['mailjet_api_key', 'mailjet_api_secret', 'mailjet_sender_email', 'mailjet_sender_name'];
+            const settingsKeys = ['mailjet_api_key', 'mailjet_api_secret', 'mailjet_sender_email', 'mailjet_sender_name', 'stripe_public_key', 'stripe_secret_key'];
             
             cmsFieldsConfig.filter(f => settingsKeys.includes(f.id)).forEach(field => {
                 const el = document.getElementById(`cms-${field.id}`);
@@ -1301,7 +1376,7 @@
                 const form = document.getElementById('settingsForm');
                 form.innerHTML = ''; 
                 
-                const settingsKeys = ['mailjet_api_key', 'mailjet_api_secret', 'mailjet_sender_email', 'mailjet_sender_name'];
+                const settingsKeys = ['mailjet_api_key', 'mailjet_api_secret', 'mailjet_sender_email', 'mailjet_sender_name', 'stripe_public_key', 'stripe_secret_key'];
                 
                 cmsFieldsConfig.filter(f => settingsKeys.includes(f.id)).forEach(field => {
                     const value = cmsData[field.id] || field.default;
@@ -1321,7 +1396,7 @@
 
         async function saveSettings() {
             const cmsData = {};
-            const settingsKeys = ['mailjet_api_key', 'mailjet_api_secret', 'mailjet_sender_email', 'mailjet_sender_name'];
+            const settingsKeys = ['mailjet_api_key', 'mailjet_api_secret', 'mailjet_sender_email', 'mailjet_sender_name', 'stripe_public_key', 'stripe_secret_key'];
             
             cmsFieldsConfig.filter(f => settingsKeys.includes(f.id)).forEach(field => {
                 const el = document.getElementById(`cms-${field.id}`);
@@ -1356,7 +1431,7 @@
                 const form = document.getElementById('cmsForm');
                 form.innerHTML = ''; // Clear existing
                 
-                const settingsKeys = ['mailjet_api_key', 'mailjet_api_secret', 'mailjet_sender_email', 'mailjet_sender_name'];
+                const settingsKeys = ['mailjet_api_key', 'mailjet_api_secret', 'mailjet_sender_email', 'mailjet_sender_name', 'stripe_public_key', 'stripe_secret_key', 'stripe_public_key', 'stripe_secret_key'];
                 cmsFieldsConfig.filter(f => !settingsKeys.includes(f.id)).forEach(field => {
                     const value = cmsData[field.id] || field.default;
                     const wrapper = document.createElement('div');
