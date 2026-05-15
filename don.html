@@ -212,6 +212,17 @@
 
     <script src="script.js"></script>
     <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const projectId = urlParams.get('project_id');
+        const projectName = urlParams.get('project_name');
+
+        if (projectName) {
+            const titleEl = document.querySelector('.donate-container h1');
+            const descEl = document.querySelector('.donate-container p');
+            if (titleEl) titleEl.textContent = "Soutenir le projet : " + projectName;
+            if (descEl) descEl.textContent = "Votre don sera affecté spécifiquement à ce projet pour aider à sa réalisation.";
+        }
+
         let selectedAmount = 20; // Default
         let stripe;
         let elements;
@@ -256,7 +267,7 @@
                 const response = await fetch("/api/create-payment-intent", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ amount }),
+                    body: JSON.stringify({ amount, projectId, projectName }),
                 });
                 
                 const data = await response.json();
@@ -360,6 +371,17 @@
             const { paymentIntent } = await stripeLocal.retrievePaymentIntent(clientSecret);
 
             if (paymentIntent.status === "succeeded") {
+                // Verify with backend
+                try {
+                    await fetch('/api/donations/verify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ payment_intent_id: paymentIntent.id })
+                    });
+                } catch (e) {
+                    console.error("Erreur lors de la vérification du don côté serveur", e);
+                }
+
                 document.getElementById('amountSelection').style.display = 'none';
                 document.getElementById('payment-form').style.display = 'none';
                 document.getElementById('successMessage').style.display = 'block';

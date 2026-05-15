@@ -439,6 +439,7 @@
                                     <th>Date</th>
                                     <th>Auteur</th>
                                     <th>Projet</th>
+                                    <th>Dons récoltés</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -867,6 +868,9 @@
                             <span style="white-space: pre-wrap; font-size: 0.9em;">${item.description}</span>
                             ${imgHtml}
                             ${ratingHtml}
+                        </td>
+                        <td data-label="Dons récoltés" style="font-weight: bold; color: #166534;">
+                            ${item.collected_donations ? Number(item.collected_donations).toLocaleString('fr-FR') + ' €' : '0 €'}
                         </td>
                         <td data-label="Actions">
                             <button class="btn-sm btn-danger" onclick="deleteProject(${item.id})">Supprimer</button>

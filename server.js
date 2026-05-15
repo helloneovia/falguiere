@@ -135,6 +135,17 @@ async function initDB() {
     await pool.query(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS image VARCHAR(255);`).catch(e => {});
     await pool.query(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS rating_sum INT DEFAULT 0;`).catch(e => {});
     await pool.query(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS rating_count INT DEFAULT 0;`).catch(e => {});
+    await pool.query(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS collected_donations DECIMAL DEFAULT 0;`).catch(e => {});
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS donations (
+        id SERIAL PRIMARY KEY,
+        project_id INT REFERENCES projects(id) ON DELETE SET NULL,
+        amount DECIMAL NOT NULL,
+        payment_intent_id VARCHAR(255) UNIQUE,
+        date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
 
     // Table Comptabilité
     await pool.query(`
@@ -696,7 +707,7 @@ app.delete('/api/accounting/:id', async (req, res) => {
 // --- STRIPE & DONATIONS ---
 app.post('/api/create-payment-intent', async (req, res) => {
   try {
-    const { amount } = req.body;
+    const { amount, projectId, projectName } = req.body;
     if (!amount || amount <= 0) return res.status(400).json({ error: "Montant invalide" });
 
     // Fetch Stripe secret key from DB
@@ -714,11 +725,55 @@ app.post('/api/create-payment-intent', async (req, res) => {
       automatic_payment_methods: {
         enabled: true,
       },
+      metadata: {
+        projectId: projectId || null,
+        projectName: projectName || null
+      },
+      description: projectName ? "Don pour le projet : " + projectName : "Don à l'Association Falguière"
     });
 
     res.send({
       clientSecret: paymentIntent.client_secret,
     });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/donations/verify', async (req, res) => {
+  try {
+    const { payment_intent_id } = req.body;
+    if (!payment_intent_id) return res.status(400).json({ error: "Missing payment_intent_id" });
+
+    // Fetch Stripe secret key
+    const cmsResult = await pool.query("SELECT value FROM cms_content WHERE key = 'stripe_secret_key'");
+    if (cmsResult.rows.length === 0 || !cmsResult.rows[0].value) {
+      return res.status(500).json({ error: "Stripe non configuré." });
+    }
+    const stripeInstance = stripe(cmsResult.rows[0].value);
+    
+    const paymentIntent = await stripeInstance.paymentIntents.retrieve(payment_intent_id);
+    
+    if (paymentIntent.status === 'succeeded') {
+      const amount = paymentIntent.amount / 100;
+      const projectId = paymentIntent.metadata.projectId;
+      
+      // Insert into donations (ignore if already exists due to UNIQUE constraint)
+      const insertResult = await pool.query(
+        "INSERT INTO donations (project_id, amount, payment_intent_id) VALUES ($1, $2, $3) ON CONFLICT (payment_intent_id) DO NOTHING RETURNING id",
+        [projectId || null, amount, payment_intent_id]
+      );
+      
+      // If newly inserted and has projectId, update project collected_donations
+      if (insertResult.rowCount > 0 && projectId) {
+        await pool.query("UPDATE projects SET collected_donations = collected_donations + $1 WHERE id = $2", [amount, projectId]);
+      }
+      
+      res.json({ success: true, amount, projectId });
+    } else {
+      res.status(400).json({ error: "Payment not succeeded" });
+    }
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
