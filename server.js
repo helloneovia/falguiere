@@ -147,6 +147,18 @@ async function initDB() {
       );
     `);
 
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS volunteers (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        phone VARCHAR(50),
+        availabilities VARCHAR(255),
+        message TEXT,
+        date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     // Table Comptabilité
     await pool.query(`
       CREATE TABLE IF NOT EXISTS accounting (
@@ -237,6 +249,42 @@ app.get('/api/messages', async (req, res) => {
 app.delete('/api/messages', async (req, res) => {
   try {
     await pool.query('TRUNCATE TABLE messages');
+    res.status(204).send();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// 2.5 Volunteers
+app.post('/api/volunteers', async (req, res) => {
+  const { name, email, phone, availabilities, message } = req.body;
+  try {
+    const result = await pool.query(
+      'INSERT INTO volunteers (name, email, phone, availabilities, message, date) VALUES ($1, $2, $3, $4, $5, NOW()) RETURNING *',
+      [name, email, phone, availabilities, message]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.get('/api/volunteers', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM volunteers ORDER BY date DESC');
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.delete('/api/volunteers/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await pool.query('DELETE FROM volunteers WHERE id = $1', [id]);
     res.status(204).send();
   } catch (err) {
     console.error(err);

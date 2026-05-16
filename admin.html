@@ -151,6 +151,7 @@
                     <li><a onclick="switchTab('accounting')" id="nav-accounting">💶 Comptabilité</a></li>
                     <li><a onclick="switchTab('newsletters')" id="nav-newsletters">📰 Newsletters</a></li>
                     <li><a onclick="switchTab('subscribers')" id="nav-subscribers">👥 Abonnés</a></li>
+                    <li><a onclick="switchTab('volunteers')" id="nav-volunteers">🤝 Bénévoles</a></li>
                     <li><a onclick="switchTab('projects')" id="nav-projects">💡 Idées Projets</a></li>
                     <li><a onclick="switchTab('cms')" id="nav-cms">✏️ Éditeur de Site</a></li>
                     <li><a onclick="switchTab('settings')" id="nav-settings">⚙️ Paramètres API</a></li>
@@ -423,6 +424,35 @@
             </div>
             </div>
 
+            <!-- TAB 4.2: Volunteers -->
+            <div id="tab-volunteers" class="tab-content">
+                <h1 style="margin-bottom: 2rem;">Bénévoles</h1>
+                <div class="admin-card">
+                    <h2>
+                        <span>🤝 Bénévoles inscrits</span>
+                    </h2>
+                    <p style="margin-bottom: 2rem; font-size: 0.9rem; color: var(--dark-muted);">Retrouvez ici toutes les personnes ayant proposé leur aide.</p>
+                    
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Nom</th>
+                                    <th>Contact</th>
+                                    <th>Disponibilités</th>
+                                    <th>Message</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="volunteersTableBody">
+                                <!-- Injected by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- TAB 4.5: Projects -->
             <div id="tab-projects" class="tab-content">
                 <h1 style="margin-bottom: 2rem;">Idées de Projets</h1>
@@ -547,6 +577,7 @@
             renderMessages();
             renderDocuments();
             renderSubscribers();
+            renderVolunteers();
             renderNewsletters();
             renderAccounting();
             renderProjects();
@@ -588,6 +619,51 @@
             } catch (err) {
                 console.error(err);
                 tbody.innerHTML = '<tr><td colspan="3" class="empty-state" style="color: #ef4444;">Erreur lors du chargement des données.</td></tr>';
+            }
+        }
+
+        async function renderVolunteers() {
+            const tbody = document.getElementById('volunteersTableBody');
+            try {
+                const response = await fetch('/api/volunteers');
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Aucun bénévole inscrit pour le moment.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.map(item => `
+                    <tr>
+                        <td data-label="Date"><span class="badge-date">${formatDate(item.date)}</span></td>
+                        <td data-label="Nom"><strong>${item.name}</strong></td>
+                        <td data-label="Contact">
+                            <a href="mailto:${item.email}" class="text-accent">${item.email}</a><br>
+                            <span style="font-size:0.9em; color:#666;">${item.phone || 'Non renseigné'}</span>
+                        </td>
+                        <td data-label="Disponibilités">${item.availabilities || '-'}</td>
+                        <td data-label="Message" style="max-width: 300px; white-space: pre-wrap;">${item.message || '-'}</td>
+                        <td data-label="Actions">
+                            <button class="btn-sm btn-danger" onclick="deleteVolunteer(${item.id})">Supprimer</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state" style="color: #ef4444;">Erreur lors du chargement.</td></tr>';
+            }
+        }
+
+        async function deleteVolunteer(id) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette candidature ?')) {
+                try {
+                    await fetch('/api/volunteers/' + id, { method: 'DELETE' });
+                    renderVolunteers();
+                } catch (err) {
+                    console.error(err);
+                    alert('Erreur lors de la suppression');
+                }
             }
         }
 

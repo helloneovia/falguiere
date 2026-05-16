@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Rejoignez l'association Falguière en tant que bénévole et contribuez à l'évolution de notre quartier.">
+    <title>Devenir Bénévole | Association Falguière</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .projects-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #ff9e6d 100%);
+            color: white;
+            padding: 8rem 0 4rem;
+            text-align: center;
+        }
+        .submit-section {
+            background: #f8fafc;
+            padding: 4rem 0;
+        }
+        .submit-form {
+            background: white;
+            padding: 3rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        .form-group input[type="text"], 
+        .form-group input[type="email"], 
+        .form-group input[type="tel"], 
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--radius-md);
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <span class="logo-accent">FAL</span>GUIÈRE
+            </a>
+            <div class="nav-links">
+                <a href="index.html#mission">Notre Mission</a>
+                <a href="index.html#actions">Nos Actions</a>
+                <a href="projets.html">Projets</a>
+                <a href="benevole.html" class="active">Bénévolat</a>
+                <a href="index.html#adhesion" class="btn btn-primary">Nous Rejoindre</a>
+                <a href="don.html" class="btn btn-outline">Faire un don</a>
+            </div>
+            <button class="mobile-menu-btn" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu">
+        <a href="index.html#mission" class="mobile-link">Notre Mission</a>
+        <a href="index.html#actions" class="mobile-link">Nos Actions</a>
+        <a href="projets.html" class="mobile-link">Projets</a>
+        <a href="benevole.html" class="mobile-link">Bénévolat</a>
+        <a href="index.html#adhesion" class="btn btn-primary w-full text-center mt-4 mobile-link">Nous Rejoindre</a>
+        <a href="don.html" class="btn btn-outline w-full text-center mt-2 mobile-link">Faire un don</a>
+    </div>
+
+    <!-- Header -->
+    <header class="projects-header">
+        <div class="container">
+            <h1 style="font-size: 3rem; margin-bottom: 1rem;">Devenir Bénévole</h1>
+            <p style="font-size: 1.2rem; opacity: 0.9; max-width: 600px; margin: 0 auto;">Donnez de votre temps pour améliorer notre quartier et renforcer la solidarité locale.</p>
+        </div>
+    </header>
+
+    <section class="section" style="padding-bottom: 2rem;">
+        <div class="container">
+            <div class="text-center" style="max-width: 800px; margin: 0 auto;">
+                <h2 style="font-size: 2.5rem; margin-bottom: 1.5rem;">Toute aide est la bienvenue</h2>
+                <p style="font-size: 1.1rem; color: var(--dark-muted); line-height: 1.8; margin-bottom: 1.5rem;">
+                    Que vous ayez quelques heures par mois ou plusieurs jours par semaine à consacrer, votre contribution est précieuse pour l'évolution du quartier Falguière.
+                </p>
+                <p style="font-size: 1.1rem; color: var(--dark-muted); line-height: 1.8;">
+                    Nous recherchons des personnes aux profils variés : aide pour nos événements, animation d'ateliers, compétences administratives ou de communication... Chaque talent compte pour faire vivre nos projets et soutenir nos voisins.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Submit Section -->
+    <section class="submit-section" id="formulaire">
+        <div class="container">
+            <form class="submit-form" id="volunteerForm">
+                <div id="formSuccess" style="display: none; background: #dcfce7; color: #166534; padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; text-align: center;">
+                    Merci ! Votre candidature a bien été envoyée. Nous vous recontacterons très vite.
+                </div>
+                <div id="formError" style="display: none; background: #fee2e2; color: #991b1b; padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; text-align: center;">
+                    Une erreur est survenue. Veuillez réessayer.
+                </div>
+
+                <div class="form-group">
+                    <label for="vName">Votre Nom et Prénom</label>
+                    <input type="text" id="vName" required placeholder="Ex: Jean Dupont">
+                </div>
+                <div class="form-group">
+                    <label for="vEmail">Votre Email</label>
+                    <input type="email" id="vEmail" required placeholder="jean@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="vPhone">Votre Téléphone (Optionnel)</label>
+                    <input type="tel" id="vPhone" placeholder="Ex: 06 12 34 56 78">
+                </div>
+                
+                <div class="form-group">
+                    <label>Vos disponibilités (Optionnel)</label>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                        <label style="font-weight: normal; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" name="vAvail" value="En semaine (journée)"> En semaine (journée)
+                        </label>
+                        <label style="font-weight: normal; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" name="vAvail" value="En semaine (soirée)"> En semaine (soirée)
+                        </label>
+                        <label style="font-weight: normal; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" name="vAvail" value="Le week-end"> Le week-end
+                        </label>
+                        <label style="font-weight: normal; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" name="vAvail" value="Ponctuellement"> Ponctuellement (événements)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="vMessage">Comment souhaitez-vous nous aider ?</label>
+                    <textarea id="vMessage" rows="5" required placeholder="Quelles sont vos envies ou compétences ?"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem;">Envoyer ma candidature</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer Placeholder -->
+    <div id="footer-placeholder"></div>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('volunteerForm');
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = form.querySelector('button[type="submit"]');
+                const originalText = btn.textContent;
+                btn.textContent = 'Envoi en cours...';
+                btn.disabled = true;
+
+                document.getElementById('formSuccess').style.display = 'none';
+                document.getElementById('formError').style.display = 'none';
+
+                // Collect availabilities
+                const checkboxes = document.querySelectorAll('input[name="vAvail"]:checked');
+                const availabilities = Array.from(checkboxes).map(cb => cb.value).join(', ');
+
+                const payload = {
+                    name: document.getElementById('vName').value.trim(),
+                    email: document.getElementById('vEmail').value.trim(),
+                    phone: document.getElementById('vPhone').value.trim(),
+                    availabilities: availabilities,
+                    message: document.getElementById('vMessage').value.trim()
+                };
+
+                try {
+                    const res = await fetch('/api/volunteers', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (!res.ok) throw new Error();
+                    
+                    document.getElementById('formSuccess').style.display = 'block';
+                    form.reset();
+                } catch (err) {
+                    document.getElementById('formError').style.display = 'block';
+                } finally {
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
