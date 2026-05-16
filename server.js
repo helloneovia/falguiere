@@ -837,7 +837,7 @@ app.post('/api/create-checkout-session', async (req, res) => {
         name = 'Membre Bienfaiteur (Mensuel)';
     } else if (tier === 'honneur') {
         amount = 20;
-        name = 'Membre d\\'Honneur (Mensuel) - T-Shirt inclus';
+        name = "Membre d'Honneur (Mensuel) - T-Shirt inclus";
         collectShipping = true;
     } else if (tier === 'mecene') {
         amount = 100;
