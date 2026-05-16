@@ -636,7 +636,7 @@ ul {
     color: var(--dark);
 }
 
-.form-group input,
+.form-group input:not([type="checkbox"]):not([type="radio"]),
 .form-group textarea {
     width: 100%;
     padding: 1rem;
@@ -648,7 +648,7 @@ ul {
     background-color: var(--gray-bg);
 }
 
-.form-group input:focus,
+.form-group input:not([type="checkbox"]):not([type="radio"]):focus,
 .form-group textarea:focus {
     outline: none;
     border-color: var(--primary);
