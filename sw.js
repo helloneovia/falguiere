@@ -1,4 +1,4 @@
-const CACHE_NAME = 'falguiere-cache-v7';
+const CACHE_NAME = 'falguiere-cache-v8';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -34,6 +34,11 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // Ne jamais mettre en cache les requêtes vers l'API
+  if (event.request.url.includes('/api/')) {
+    return;
+  }
+
   // Stratégie "Network First" pour le HTML, CSS, JS et la navigation
   if (
     event.request.mode === 'navigate' || 
