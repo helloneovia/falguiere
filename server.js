@@ -249,19 +249,8 @@ app.get('/api/cms', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM cms_content');
     const content = {};
-    const hiddenKeys = ['mailjet_api_key', 'mailjet_api_secret', 'stripe_secret_key'];
     result.rows.forEach(row => {
-      // Do not expose secrets to the frontend unless requested by admin?
-      // Actually, admin frontend also hits this to fill the settings form.
-      // Wait, if we hide them here, the admin form won't be able to show them.
-      // But we shouldn't show them anyway for security. We can let the admin input them again if they want to change them.
-      // A better way: return them only if there's an admin token? But we only have digicode client-side.
-      // It's safer to just let the frontend know they exist or hide them entirely.
-      // For now, let's just return all of them to admin, but wait, there's no auth on this route.
-      // So let's hide the secrets. The admin will just see empty fields, but if they enter a value it saves.
-      if (!hiddenKeys.includes(row.key)) {
-        content[row.key] = row.value;
-      }
+      content[row.key] = row.value;
     });
     res.json(content);
   } catch (err) {
