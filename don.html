@@ -98,12 +98,16 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         
-        @media (max-width: 480px) {
+        @media (max-width: 576px) {
             .donate-section {
-                padding: 6rem 1rem 4rem;
+                padding: 5rem 0 0 0;
+            }
+            .donate-section .container {
+                padding: 0;
             }
             .donate-container {
-                padding: 1.5rem;
+                padding: 2rem 1rem;
+                border-radius: 0;
             }
             .amount-selector {
                 gap: 0.5rem;
