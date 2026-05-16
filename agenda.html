@@ -60,6 +60,19 @@
             max-width: 400px;
             transform: translateY(20px);
             transition: transform 0.2s;
+            position: relative;
+        }
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--dark-muted);
+            transition: color 0.2s;
+        }
+        .close-modal:hover {
+            color: #ef4444;
         }
         .modal.active .modal-content {
             transform: translateY(0);
@@ -134,10 +147,17 @@
     <!-- Modal Form -->
     <div id="shiftModal" class="modal">
         <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">×</span>
             <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">M'inscrire sur ce créneau</h3>
             <p id="shiftTime" style="margin-bottom: 1.5rem; color: var(--dark-muted); font-size: 0.9rem;"></p>
             
             <form id="shiftForm">
+                <div class="form-group">
+                    <label for="shiftEndTime">Jusqu'à quelle heure ?</label>
+                    <select id="shiftEndTime" required>
+                        <!-- Options injected by JS -->
+                    </select>
+                </div>
                 <div class="form-group">
                     <label for="shiftName">Votre Nom</label>
                     <input type="text" id="shiftName" required placeholder="Ex: Marie Dupont">
@@ -220,29 +240,63 @@
                     }
                 },
                 dateClick: function(info) {
-                    const start = info.date;
-                    const end = new Date(start.getTime() + 60 * 60 * 1000); // 1 heure par défaut
-                    
-                    selectedSelectionInfo = { start: start, end: end };
-                    
-                    const startStr = start.toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
-                    const endStr = end.toLocaleString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-                    
-                    document.getElementById('shiftTime').innerText = startStr + ' - ' + endStr;
-                    document.getElementById('shiftModal').classList.add('active');
+                    openShiftModal(info.date, null);
                 },
                 select: function(info) {
-                    selectedSelectionInfo = { start: info.start, end: info.end };
-                    
-                    const startStr = info.start.toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
-                    const endStr = info.end.toLocaleString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-                    
-                    document.getElementById('shiftTime').innerText = startStr + ' - ' + endStr;
-                    document.getElementById('shiftModal').classList.add('active');
+                    openShiftModal(info.start, info.end);
                 }
             });
             
             calendar.render();
+
+            function openShiftModal(start, end) {
+                if (!end) {
+                    end = new Date(start.getTime() + 60 * 60 * 1000); // 1 heure par défaut
+                }
+                selectedSelectionInfo = { start: start, end: end };
+                
+                const startStr = start.toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+                
+                // Build end time options up to 20:00
+                const endSelect = document.getElementById('shiftEndTime');
+                endSelect.innerHTML = '';
+                
+                let currentEnd = new Date(start.getTime() + 60 * 60 * 1000);
+                const maxHour = 20; // 20:00 limit
+                
+                // Use selected end if it's larger
+                if (end.getTime() > currentEnd.getTime()) {
+                    currentEnd = end;
+                }
+
+                let addedOptions = false;
+                let optTime = new Date(start.getTime() + 60 * 60 * 1000);
+
+                while (optTime.getHours() <= maxHour && optTime.getDate() === start.getDate() && optTime.getHours() !== 0) {
+                    const opt = document.createElement('option');
+                    opt.value = optTime.toISOString();
+                    opt.textContent = optTime.toLocaleString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                    
+                    if (optTime.getTime() === currentEnd.getTime()) {
+                        opt.selected = true;
+                    }
+                    endSelect.appendChild(opt);
+                    optTime = new Date(optTime.getTime() + 60 * 60 * 1000);
+                    addedOptions = true;
+                }
+                
+                if (!addedOptions) {
+                    // Fallback just in case
+                    const opt = document.createElement('option');
+                    opt.value = end.toISOString();
+                    opt.textContent = end.toLocaleString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                    opt.selected = true;
+                    endSelect.appendChild(opt);
+                }
+                
+                document.getElementById('shiftTime').innerText = "Début : " + startStr;
+                document.getElementById('shiftModal').classList.add('active');
+            }
 
             // Form Submit
             document.getElementById('shiftForm').addEventListener('submit', async (e) => {
@@ -252,7 +306,7 @@
                 const name = document.getElementById('shiftName').value.trim();
                 const task = document.getElementById('shiftTask').value;
                 const startTime = selectedSelectionInfo.start.toISOString();
-                const endTime = selectedSelectionInfo.end.toISOString();
+                const endTime = document.getElementById('shiftEndTime').value;
 
                 try {
                     const res = await fetch('/api/shifts', {
