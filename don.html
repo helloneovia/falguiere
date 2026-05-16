@@ -167,35 +167,78 @@
                 <h1 style="text-align: center; margin-bottom: 1rem;">Soutenir Falguière</h1>
                 <p style="text-align: center; color: var(--dark-muted); margin-bottom: 2rem;">Votre don permet de financer nos actions solidaires (distributions, aide scolaire, aménagement urbain) dans le 15ème arrondissement.</p>
                 
-                <div id="amountSelection">
-                    <label style="display: block; font-weight: 600; margin-bottom: 1rem;">Choisissez un montant :</label>
-                    <div class="amount-selector">
-                        <button class="amount-btn" onclick="selectAmount(10, this)">10 €</button>
-                        <button class="amount-btn selected" onclick="selectAmount(20, this)">20 €</button>
-                        <button class="amount-btn" onclick="selectAmount(50, this)">50 €</button>
-                    </div>
-                    
-                    <div class="custom-amount-wrapper">
-                        <span>Montant libre : </span>
-                        <input type="number" id="customAmount" class="custom-amount-input" min="1" placeholder="Ex: 30" oninput="clearSelection()">
-                    </div>
-
-                    <button id="startPaymentBtn" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.2rem;" onclick="initializePayment()">
-                        Valider ce montant
-                    </button>
-                    <div id="initError" style="color: #ef4444; margin-top: 1rem; text-align: center;"></div>
+                <div class="donate-tabs">
+                    <button class="tab-btn active" onclick="switchTab('unique')">Don Unique</button>
+                    <button class="tab-btn" onclick="switchTab('abonnement')">Devenir Membre (Mensuel)</button>
                 </div>
 
-                <form id="payment-form">
-                    <div id="payment-element">
-                        <!-- Stripe Elements sera inséré ici -->
+                <div id="panel-unique" class="donate-panel active">
+                    <div id="amountSelection">
+                        <label style="display: block; font-weight: 600; margin-bottom: 1rem;">Choisissez un montant :</label>
+                        <div class="amount-selector">
+                            <button class="amount-btn" onclick="selectAmount(10, this)">10 €</button>
+                            <button class="amount-btn selected" onclick="selectAmount(20, this)">20 €</button>
+                            <button class="amount-btn" onclick="selectAmount(50, this)">50 €</button>
+                        </div>
+                        
+                        <div class="custom-amount-wrapper">
+                            <span>Montant libre : </span>
+                            <input type="number" id="customAmount" class="custom-amount-input" min="1" placeholder="Ex: 30" oninput="clearSelection()">
+                        </div>
+
+                        <button id="startPaymentBtn" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.2rem;" onclick="initializePayment()">
+                            Valider ce montant
+                        </button>
+                        <div id="initError" style="color: #ef4444; margin-top: 1rem; text-align: center;"></div>
                     </div>
-                    <button id="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.2rem; margin-top: 1.5rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; border-radius: var(--radius-md);">
-                        <div class="spinner" id="spinner"></div>
-                        <span id="button-text">JE DONNE</span>
-                    </button>
-                    <div id="payment-message" style="color: #ef4444; margin-top: 1rem; text-align: center; font-weight: 600;"></div>
-                </form>
+
+                    <form id="payment-form">
+                        <div id="payment-element">
+                            <!-- Stripe Elements sera inséré ici -->
+                        </div>
+                        <button id="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.2rem; margin-top: 1.5rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; border-radius: var(--radius-md);">
+                            <div class="spinner" id="spinner"></div>
+                            <span id="button-text">JE DONNE</span>
+                        </button>
+                        <div id="payment-message" style="color: #ef4444; margin-top: 1rem; text-align: center; font-weight: 600;"></div>
+                    </form>
+                </div>
+
+                <div id="panel-abonnement" class="donate-panel">
+                    <div class="subs-grid">
+                        <div class="sub-card">
+                            <h3 class="sub-title">Bienfaiteur</h3>
+                            <div class="sub-price">5 €<span>/mois</span></div>
+                            <ul class="sub-features">
+                                <li>Soutien continu aux actions</li>
+                                <li>Reçu fiscal annuel (66%)</li>
+                            </ul>
+                            <button class="btn btn-outline sub-action" style="color: var(--primary); border-color: var(--primary); width: 100%;" onclick="checkoutSubscription('bienfaiteur')">Choisir ce palier</button>
+                        </div>
+                        <div class="sub-card popular">
+                            <h3 class="sub-title">Membre d'Honneur</h3>
+                            <div class="sub-price">20 €<span>/mois</span></div>
+                            <ul class="sub-features">
+                                <li>Soutien continu aux actions</li>
+                                <li>Reçu fiscal annuel</li>
+                                <li><strong>T-shirt de l'association offert !</strong></li>
+                            </ul>
+                            <button class="btn btn-primary sub-action" style="width: 100%;" onclick="checkoutSubscription('honneur')">Choisir ce palier</button>
+                        </div>
+                        <div class="sub-card">
+                            <h3 class="sub-title">Grand Mécène</h3>
+                            <div class="sub-price">100 €<span>/mois</span></div>
+                            <ul class="sub-features">
+                                <li>Soutien continu majeur</li>
+                                <li>Reçu fiscal annuel</li>
+                                <li>T-shirt de l'association offert</li>
+                                <li><strong>Invitations aux évènements privés</strong></li>
+                            </ul>
+                            <button class="btn btn-outline sub-action" style="color: var(--primary); border-color: var(--primary); width: 100%;" onclick="checkoutSubscription('mecene')">Choisir ce palier</button>
+                        </div>
+                    </div>
+                    <div id="subsError" style="color: #ef4444; margin-top: 1rem; text-align: center;"></div>
+                </div>
 
                 <div class="success-message" id="successMessage">
                     <div class="success-icon">❤️</div>
@@ -353,10 +396,21 @@
         }
 
         // Check for return_url params
+        // Check for return_url params
         async function checkStatus() {
             const clientSecret = new URLSearchParams(window.location.search).get(
                 "payment_intent_client_secret"
             );
+            const sessionId = new URLSearchParams(window.location.search).get("session_id");
+            const success = new URLSearchParams(window.location.search).get("success");
+
+            if (sessionId && success === 'true') {
+                document.getElementById('panel-unique').style.display = 'none';
+                document.getElementById('panel-abonnement').style.display = 'none';
+                document.querySelector('.donate-tabs').style.display = 'none';
+                document.getElementById('successMessage').style.display = 'block';
+                return;
+            }
 
             if (!clientSecret) return;
 
@@ -382,8 +436,8 @@
                     console.error("Erreur lors de la vérification du don côté serveur", e);
                 }
 
-                document.getElementById('amountSelection').style.display = 'none';
-                document.getElementById('payment-form').style.display = 'none';
+                document.getElementById('panel-unique').style.display = 'none';
+                document.querySelector('.donate-tabs').style.display = 'none';
                 document.getElementById('successMessage').style.display = 'block';
             } else {
                 showMessage("Le paiement n'a pas pu être validé : " + paymentIntent.status);
@@ -405,6 +459,45 @@
                 document.querySelector("#submit").disabled = false;
                 document.querySelector("#spinner").style.display = "none";
                 document.querySelector("#button-text").style.display = "block";
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.donate-panel').forEach(panel => panel.classList.remove('active'));
+            
+            if (tabId === 'unique') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('panel-unique').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('panel-abonnement').classList.add('active');
+            }
+        }
+
+        async function checkoutSubscription(tier) {
+            const errorEl = document.getElementById('subsError');
+            errorEl.textContent = "";
+            
+            // Disable all buttons in panel temporarily
+            const buttons = document.querySelectorAll('#panel-abonnement button');
+            buttons.forEach(b => b.disabled = true);
+            
+            try {
+                const response = await fetch("/api/create-checkout-session", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ tier, projectId, projectName }),
+                });
+                
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+                
+                // Redirect to Stripe Checkout
+                window.location.href = data.url;
+            } catch (error) {
+                errorEl.textContent = error.message;
+                buttons.forEach(b => b.disabled = false);
             }
         }
 

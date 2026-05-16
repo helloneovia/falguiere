@@ -769,6 +769,86 @@ app.post('/api/donations/verify', async (req, res) => {
   }
 });
 
+app.post('/api/create-checkout-session', async (req, res) => {
+  try {
+    const { tier, projectId, projectName } = req.body;
+    
+    // Fetch Stripe secret key
+    const cmsResult = await pool.query("SELECT value FROM cms_content WHERE key = 'stripe_secret_key'");
+    if (cmsResult.rows.length === 0 || !cmsResult.rows[0].value) {
+      return res.status(500).json({ error: "Stripe non configuré." });
+    }
+    const stripeInstance = stripe(cmsResult.rows[0].value);
+    
+    let amount = 0;
+    let name = '';
+    let collectShipping = false;
+    
+    if (tier === 'bienfaiteur') {
+        amount = 5;
+        name = 'Membre Bienfaiteur (Mensuel)';
+    } else if (tier === 'honneur') {
+        amount = 20;
+        name = 'Membre d\\'Honneur (Mensuel) - T-Shirt inclus';
+        collectShipping = true;
+    } else if (tier === 'mecene') {
+        amount = 100;
+        name = 'Grand Mécène (Mensuel)';
+    } else {
+        return res.status(400).json({ error: 'Palier invalide' });
+    }
+    
+    const sessionConfig = {
+      payment_method_types: ['card'],
+      mode: 'subscription',
+      line_items: [{
+        price_data: {
+          currency: 'eur',
+          product_data: {
+            name: name,
+            description: projectName ? "Soutien pour : " + projectName : "Soutien à l'Association Falguière",
+          },
+          unit_amount: amount * 100,
+          recurring: {
+            interval: 'month',
+          },
+        },
+        quantity: 1,
+      }],
+      success_url: req.headers.origin + '/don.html?session_id={CHECKOUT_SESSION_ID}&success=true',
+      cancel_url: req.headers.origin + '/don.html',
+      metadata: {
+        tier: tier,
+        projectId: projectId || null,
+        projectName: projectName || null
+      }
+    };
+    
+    if (collectShipping) {
+      sessionConfig.shipping_address_collection = {
+        allowed_countries: ['FR', 'BE', 'CH', 'LU'],
+      };
+      sessionConfig.custom_fields = [
+        {
+          key: 'tshirt_size',
+          label: {
+            type: 'custom',
+            custom: 'Taille de T-Shirt (S, M, L, XL)',
+          },
+          type: 'text',
+          optional: false,
+        }
+      ];
+    }
+    
+    const session = await stripeInstance.checkout.sessions.create(sessionConfig);
+    res.json({ id: session.id, url: session.url });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // --- PROJECTS ---
 app.get('/api/projects', async (req, res) => {
   try {
