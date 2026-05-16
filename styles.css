@@ -883,3 +883,37 @@ ul {
     margin-top: auto;
 }
 
+/* Responsive adjustments for Don, Benevolat, and Agenda */
+@media (max-width: 576px) {
+    .donate-tabs {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .tab-btn {
+        width: 100%;
+        font-size: 1rem;
+        padding: 0.8rem;
+        white-space: normal;
+        height: auto;
+    }
+    .subs-grid {
+        grid-template-columns: 1fr;
+    }
+    .sub-card {
+        padding: 1.5rem 1rem;
+    }
+    .fc .fc-toolbar {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .fc .fc-toolbar-title {
+        font-size: 1.2rem !important;
+    }
+    #calendar {
+        padding: 0.5rem !important;
+    }
+    .submit-form {
+        padding: 1.5rem !important;
+        margin: 0 1rem;
+    }
+}
