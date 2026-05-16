@@ -949,4 +949,14 @@ ul {
         border-left: none !important;
         border-right: none !important;
     }
+
+    .glass-card, .action-card, .contact-card, .sub-card, .project-card, .admin-card {
+        margin-left: -1rem !important;
+        margin-right: -1rem !important;
+        width: calc(100% + 2rem) !important;
+        max-width: none !important;
+        border-radius: 0 !important;
+        border-left: none !important;
+        border-right: none !important;
+    }
 }
