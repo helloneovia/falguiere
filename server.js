@@ -159,6 +159,17 @@ async function initDB() {
       );
     `);
 
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS volunteer_shifts (
+        id SERIAL PRIMARY KEY,
+        volunteer_name VARCHAR(255) NOT NULL,
+        task VARCHAR(255) NOT NULL,
+        start_time TIMESTAMP NOT NULL,
+        end_time TIMESTAMP NOT NULL,
+        date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     // Table Comptabilité
     await pool.query(`
       CREATE TABLE IF NOT EXISTS accounting (
@@ -285,6 +296,42 @@ app.delete('/api/volunteers/:id', async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     await pool.query('DELETE FROM volunteers WHERE id = $1', [id]);
+    res.status(204).send();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// 2.6 Volunteer Shifts
+app.post('/api/shifts', async (req, res) => {
+  const { volunteer_name, task, start_time, end_time } = req.body;
+  try {
+    const result = await pool.query(
+      'INSERT INTO volunteer_shifts (volunteer_name, task, start_time, end_time, date) VALUES ($1, $2, $3, $4, NOW()) RETURNING *',
+      [volunteer_name, task, start_time, end_time]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.get('/api/shifts', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM volunteer_shifts ORDER BY start_time ASC');
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.delete('/api/shifts/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await pool.query('DELETE FROM volunteer_shifts WHERE id = $1', [id]);
     res.status(204).send();
   } catch (err) {
     console.error(err);

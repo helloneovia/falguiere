@@ -152,6 +152,7 @@
                     <li><a onclick="switchTab('newsletters')" id="nav-newsletters">📰 Newsletters</a></li>
                     <li><a onclick="switchTab('subscribers')" id="nav-subscribers">👥 Abonnés</a></li>
                     <li><a onclick="switchTab('volunteers')" id="nav-volunteers">🤝 Bénévoles</a></li>
+                    <li><a onclick="switchTab('agenda')" id="nav-agenda">📅 Agenda Bénévoles</a></li>
                     <li><a onclick="switchTab('projects')" id="nav-projects">💡 Idées Projets</a></li>
                     <li><a onclick="switchTab('cms')" id="nav-cms">✏️ Éditeur de Site</a></li>
                     <li><a onclick="switchTab('settings')" id="nav-settings">⚙️ Paramètres API</a></li>
@@ -453,6 +454,34 @@
                 </div>
             </div>
 
+            <!-- TAB 4.3: Agenda -->
+            <div id="tab-agenda" class="tab-content">
+                <h1 style="margin-bottom: 2rem;">Agenda des Bénévoles</h1>
+                <div class="admin-card">
+                    <h2>
+                        <span>📅 Créneaux réservés</span>
+                    </h2>
+                    <p style="margin-bottom: 2rem; font-size: 0.9rem; color: var(--dark-muted);">Retrouvez ici tous les créneaux sélectionnés par les bénévoles sur l'agenda public.</p>
+                    
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Début</th>
+                                    <th>Fin</th>
+                                    <th>Bénévole</th>
+                                    <th>Tâche</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="agendaTableBody">
+                                <!-- Injected by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- TAB 4.5: Projects -->
             <div id="tab-projects" class="tab-content">
                 <h1 style="margin-bottom: 2rem;">Idées de Projets</h1>
@@ -578,6 +607,7 @@
             renderDocuments();
             renderSubscribers();
             renderVolunteers();
+            renderAgendaShifts();
             renderNewsletters();
             renderAccounting();
             renderProjects();
@@ -660,6 +690,47 @@
                 try {
                     await fetch('/api/volunteers/' + id, { method: 'DELETE' });
                     renderVolunteers();
+                } catch (err) {
+                    console.error(err);
+                    alert('Erreur lors de la suppression');
+                }
+            }
+        }
+
+        async function renderAgendaShifts() {
+            const tbody = document.getElementById('agendaTableBody');
+            try {
+                const response = await fetch('/api/shifts');
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Aucun créneau réservé pour le moment.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.map(item => `
+                    <tr>
+                        <td data-label="Début"><span class="badge-date">${formatDate(item.start_time)}</span></td>
+                        <td data-label="Fin"><span class="badge-date">${formatDate(item.end_time)}</span></td>
+                        <td data-label="Bénévole"><strong>${item.volunteer_name}</strong></td>
+                        <td data-label="Tâche" style="text-transform: capitalize;">${item.task}</td>
+                        <td data-label="Actions">
+                            <button class="btn-sm btn-danger" onclick="deleteAgendaShift(${item.id})">Supprimer</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state" style="color: #ef4444;">Erreur lors du chargement.</td></tr>';
+            }
+        }
+
+        async function deleteAgendaShift(id) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce créneau de l\\'agenda ?')) {
+                try {
+                    await fetch('/api/shifts/' + id, { method: 'DELETE' });
+                    renderAgendaShifts();
                 } catch (err) {
                     console.error(err);
                     alert('Erreur lors de la suppression');

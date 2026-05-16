@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Agenda des bénévoles de l'association Falguière. Inscrivez-vous sur les créneaux.">
+    <title>Agenda Bénévoles | Association Falguière</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- FullCalendar JS -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/locales/fr.global.min.js'></script>
+
+    <style>
+        .projects-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #10b981 100%);
+            color: white;
+            padding: 8rem 0 4rem;
+            text-align: center;
+        }
+        #calendar {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+        }
+        .fc-event {
+            cursor: pointer;
+            border-radius: 4px;
+            padding: 2px 4px;
+        }
+        
+        /* Modale */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius-md);
+            width: 100%;
+            max-width: 400px;
+            transform: translateY(20px);
+            transition: transform 0.2s;
+        }
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--radius-md);
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <span class="logo-accent">FAL</span>GUIÈRE
+            </a>
+            <div class="nav-links">
+                <a href="index.html#mission">Notre Mission</a>
+                <a href="index.html#actions">Nos Actions</a>
+                <a href="projets.html">Projets</a>
+                <a href="agenda.html" class="active">Agenda</a>
+                <a href="benevole.html">Bénévolat</a>
+                <a href="index.html#adhesion" class="btn btn-primary">Nous Rejoindre</a>
+                <a href="don.html" class="btn btn-outline">Faire un don</a>
+            </div>
+            <button class="mobile-menu-btn" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu">
+        <a href="index.html#mission" class="mobile-link">Notre Mission</a>
+        <a href="index.html#actions" class="mobile-link">Nos Actions</a>
+        <a href="projets.html" class="mobile-link">Projets</a>
+        <a href="agenda.html" class="mobile-link">Agenda</a>
+        <a href="benevole.html" class="mobile-link">Bénévolat</a>
+        <a href="index.html#adhesion" class="btn btn-primary w-full text-center mt-4 mobile-link">Nous Rejoindre</a>
+        <a href="don.html" class="btn btn-outline w-full text-center mt-2 mobile-link">Faire un don</a>
+    </div>
+
+    <!-- Header -->
+    <header class="projects-header">
+        <div class="container">
+            <h1 style="font-size: 3rem; margin-bottom: 1rem;">Agenda des Bénévoles</h1>
+            <p style="font-size: 1.2rem; opacity: 0.9; max-width: 600px; margin: 0 auto;">Sélectionnez un créneau libre pour venir nous aider. Cliquez simplement sur le calendrier pour vous inscrire.</p>
+        </div>
+    </header>
+
+    <section class="section" style="background: #f8fafc;">
+        <div class="container">
+            <div id='calendar'></div>
+        </div>
+    </section>
+
+    <!-- Modal Form -->
+    <div id="shiftModal" class="modal">
+        <div class="modal-content">
+            <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">M'inscrire sur ce créneau</h3>
+            <p id="shiftTime" style="margin-bottom: 1.5rem; color: var(--dark-muted); font-size: 0.9rem;"></p>
+            
+            <form id="shiftForm">
+                <div class="form-group">
+                    <label for="shiftName">Votre Nom</label>
+                    <input type="text" id="shiftName" required placeholder="Ex: Marie Dupont">
+                </div>
+                <div class="form-group">
+                    <label for="shiftTask">Tâche prévue</label>
+                    <select id="shiftTask" required>
+                        <option value="collecte">Collecte</option>
+                        <option value="maraude">Maraude</option>
+                        <option value="service">Service</option>
+                        <option value="administratif">Administratif</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button type="button" class="btn btn-outline" style="flex:1;" onclick="closeModal()">Annuler</button>
+                    <button type="submit" class="btn btn-primary" style="flex:1;">Valider</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer Placeholder -->
+    <div id="footer-placeholder"></div>
+
+    <script src="script.js"></script>
+    <script>
+        let calendar;
+        let selectedSelectionInfo = null;
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            const calendarEl = document.getElementById('calendar');
+            
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                locale: 'fr',
+                initialView: 'timeGridWeek',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'timeGridWeek,timeGridDay'
+                },
+                slotMinTime: '08:00:00',
+                slotMaxTime: '20:00:00',
+                allDaySlot: false,
+                selectable: true,
+                selectMirror: true,
+                editable: false,
+                slotDuration: '01:00:00',
+                events: async function(info, successCallback, failureCallback) {
+                    try {
+                        const response = await fetch('/api/shifts');
+                        const data = await response.json();
+                        
+                        // Map colors per task
+                        const colorMap = {
+                            'collecte': '#3b82f6', // blue
+                            'maraude': '#ef4444', // red
+                            'service': '#10b981', // green
+                            'administratif': '#8b5cf6' // purple
+                        };
+
+                        const events = data.map(item => ({
+                            id: item.id,
+                            title: item.volunteer_name + ' (' + item.task + ')',
+                            start: item.start_time,
+                            end: item.end_time,
+                            backgroundColor: colorMap[item.task] || '#3b82f6',
+                            borderColor: colorMap[item.task] || '#3b82f6'
+                        }));
+                        successCallback(events);
+                    } catch (err) {
+                        console.error('Error fetching shifts', err);
+                        failureCallback(err);
+                    }
+                },
+                select: function(info) {
+                    selectedSelectionInfo = info;
+                    
+                    const startStr = info.start.toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+                    const endStr = info.end.toLocaleString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                    
+                    document.getElementById('shiftTime').innerText = startStr + ' - ' + endStr;
+                    document.getElementById('shiftModal').classList.add('active');
+                }
+            });
+            
+            calendar.render();
+
+            // Form Submit
+            document.getElementById('shiftForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!selectedSelectionInfo) return;
+
+                const name = document.getElementById('shiftName').value.trim();
+                const task = document.getElementById('shiftTask').value;
+                const startTime = selectedSelectionInfo.start.toISOString();
+                const endTime = selectedSelectionInfo.end.toISOString();
+
+                try {
+                    const res = await fetch('/api/shifts', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            volunteer_name: name,
+                            task: task,
+                            start_time: startTime,
+                            end_time: endTime
+                        })
+                    });
+                    
+                    if (res.ok) {
+                        calendar.refetchEvents();
+                        closeModal();
+                    } else {
+                        alert('Erreur lors de l\'enregistrement');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Erreur réseau');
+                }
+            });
+        });
+
+        function closeModal() {
+            document.getElementById('shiftModal').classList.remove('active');
+            document.getElementById('shiftForm').reset();
+            if (calendar) {
+                calendar.unselect();
+            }
+            selectedSelectionInfo = null;
+        }
+    </script>
+</body>
+</html>
