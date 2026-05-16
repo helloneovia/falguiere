@@ -931,4 +931,22 @@ ul {
         max-width: none !important;
         margin: auto 0 0 0 !important;
     }
+
+    .form-group input:not([type="checkbox"]):not([type="radio"]),
+    .form-group textarea,
+    .form-group select {
+        width: calc(100% + 2rem) !important;
+        margin-left: -1rem !important;
+        margin-right: -1rem !important;
+        border-left: none !important;
+        border-right: none !important;
+        border-radius: 0 !important;
+    }
+    .form-group input:not([type="checkbox"]):not([type="radio"]):focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        box-shadow: none !important;
+        border-left: none !important;
+        border-right: none !important;
+    }
 }
