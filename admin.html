@@ -727,7 +727,7 @@
         }
 
         async function deleteAgendaShift(id) {
-            if (confirm('Êtes-vous sûr de vouloir supprimer ce créneau de l\\'agenda ?')) {
+            if (confirm("Êtes-vous sûr de vouloir supprimer ce créneau de l'agenda ?")) {
                 try {
                     await fetch('/api/shifts/' + id, { method: 'DELETE' });
                     renderAgendaShifts();
