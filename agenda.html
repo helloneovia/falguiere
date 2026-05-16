@@ -172,11 +172,18 @@
             
             calendar = new FullCalendar.Calendar(calendarEl, {
                 locale: 'fr',
-                initialView: 'timeGridWeek',
+                initialView: window.innerWidth < 768 ? 'timeGridDay' : 'timeGridWeek',
+                windowResize: function(arg) {
+                    if (window.innerWidth < 768) {
+                        calendar.changeView('timeGridDay');
+                    } else {
+                        calendar.changeView('timeGridWeek');
+                    }
+                },
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'timeGridWeek,timeGridDay'
+                    right: window.innerWidth < 768 ? '' : 'timeGridWeek,timeGridDay'
                 },
                 slotMinTime: '08:00:00',
                 slotMaxTime: '20:00:00',
@@ -212,8 +219,20 @@
                         failureCallback(err);
                     }
                 },
+                dateClick: function(info) {
+                    const start = info.date;
+                    const end = new Date(start.getTime() + 60 * 60 * 1000); // 1 heure par défaut
+                    
+                    selectedSelectionInfo = { start: start, end: end };
+                    
+                    const startStr = start.toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+                    const endStr = end.toLocaleString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                    
+                    document.getElementById('shiftTime').innerText = startStr + ' - ' + endStr;
+                    document.getElementById('shiftModal').classList.add('active');
+                },
                 select: function(info) {
-                    selectedSelectionInfo = info;
+                    selectedSelectionInfo = { start: info.start, end: info.end };
                     
                     const startStr = info.start.toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
                     const endStr = info.end.toLocaleString('fr-FR', { hour: '2-digit', minute: '2-digit' });
