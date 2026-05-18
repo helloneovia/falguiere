@@ -195,6 +195,12 @@ initDB();
 app.post('/api/adhesions', async (req, res) => {
   const { name, email, phone } = req.body;
   try {
+    // Check for existing adhesion to prevent duplicates
+    const existing = await pool.query('SELECT * FROM adhesions WHERE email = $1', [email]);
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ error: 'Une adhésion avec cet email existe déjà.' });
+    }
+
     const result = await pool.query(
       'INSERT INTO adhesions (name, email, phone, date) VALUES ($1, $2, $3, NOW()) RETURNING *',
       [name, email, phone]
