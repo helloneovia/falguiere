@@ -2,6 +2,7 @@ const CACHE_NAME = 'falguiere-cache-v8';
 const urlsToCache = [
   '/',
   '/index.html',
+  '/offline.html',
   '/don.html',
   '/projets.html',
   '/politique-confidentialite.html',
@@ -64,7 +65,7 @@ self.addEventListener('fetch', event => {
               return response;
             }
             if (event.request.mode === 'navigate') {
-              return caches.match('/');
+              return caches.match('/offline.html');
             }
           });
         })
@@ -101,4 +102,13 @@ self.addEventListener('activate', event => {
       );
     })
   );
+});
+
+// Periodic background sync for PWABuilder
+self.addEventListener('periodicsync', event => {
+  if (event.tag === 'sync-data') {
+    event.waitUntil(
+      console.log('Periodic sync triggered for data update')
+    );
+  }
 });

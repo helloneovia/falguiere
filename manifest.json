@@ -4,8 +4,8 @@
   "description": "Association Falguière - Ensemble pour développer notre quartier et créer de la solidarité. 133 rue Falguière, 75015 Paris.",
   "start_url": "/",
   "id": "/",
-  "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone"],
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "tabbed", "window-controls-overlay", "standalone"],
   "orientation": "any",
   "scope": "/",
   "lang": "fr",
@@ -49,6 +49,12 @@
       "text": "text",
       "url": "url"
     }
+  },
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "note_taking": {
+    "new_note_url": "/?note"
   },
   "widgets": [
     {
