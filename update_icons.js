@@ -3,13 +3,13 @@ const sharp = require('sharp');
 async function generate() {
     try {
         console.log('Generating 192x192 icon...');
-        await sharp('assets/background-photo.jpg')
+        await sharp('assets/logo.png')
             .resize(192, 192, { fit: 'cover' })
             .png()
             .toFile('assets/icon-192x192.png');
 
         console.log('Generating 512x512 icon...');
-        await sharp('assets/background-photo.jpg')
+        await sharp('assets/logo.png')
             .resize(512, 512, { fit: 'cover' })
             .png()
             .toFile('assets/icon-512x512.png');
