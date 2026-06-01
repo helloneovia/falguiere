@@ -1,0 +1,15 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "org.falguiere.twa",
+      "sha256_cert_fingerprints": [
+        "4B:31:10:0C:BD:C6:26:FB:72:C9:00:37:09:0F:4E:C3:F2:E5:FC:57:C5:E7:1D:E5:84:50:02:D1:F3:8C"
+      ]
+    }
+  }
+]
