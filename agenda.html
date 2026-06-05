@@ -151,6 +151,18 @@
         </div>
     </section>
 
+    <!-- Additional Content and CTA -->
+    <section class="section" style="padding: 4rem 0; text-align: center;">
+        <div class="container">
+            <h2 style="font-size: 2rem; margin-bottom: 1rem;">Votre engagement fait la différence</h2>
+            <p style="font-size: 1.1rem; color: var(--dark-muted); max-width: 700px; margin: 0 auto 2rem;">Chaque heure que vous consacrez à l'Association Falguière nous permet de mener à bien nos actions de solidarité, de lutte contre la précarité et de développement local. Si vous ne trouvez pas de créneau qui vous convient, vous pouvez toujours nous soutenir autrement.</p>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <a href="benevole.html" class="btn btn-primary">Autres façons d'aider</a>
+                <a href="don.html" class="btn btn-outline">Soutenir par un don</a>
+            </div>
+        </div>
+    </section>
+
     <!-- Modal Form -->
     <div id="shiftModal" class="modal">
         <div class="modal-content">
@@ -186,10 +198,31 @@
         </div>
     </div>
 
-    <!-- Footer Placeholder -->
-    <div id="footer-placeholder"></div>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container text-center">
+            <div class="footer-logo">
+                <span class="logo-accent">FAL</span>GUIÈRE
+            </div>
+            <img src="assets/logo.png" alt="Logo Association Falguière" style="max-width: 150px; margin: 1.5rem auto; display: block; opacity: 0.9;" loading="lazy">
+            <p class="footer-text" data-cms="footer-desc">L'association pour le développement et la solidarité du quartier Falguière à Paris 15e.</p>
+            <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem; font-weight: bold;">Association Loi 1901 à but non lucratif - N° RNA : W751284066</p>
 
-    <script src="script.js"></script>
+            <div style="display: flex; justify-content: center; gap: 2rem; margin-top: 2rem; flex-wrap: wrap;">
+                <a href="index.html" style="color: var(--white); text-decoration: none; opacity: 0.8;">Accueil</a>
+                <a href="projets.html" style="color: var(--white); text-decoration: none; opacity: 0.8;">Projets</a>
+                <a href="agenda.html" style="color: var(--white); text-decoration: none; opacity: 0.8;">Agenda</a>
+                <a href="benevole.html" style="color: var(--white); text-decoration: none; opacity: 0.8;">Devenir Bénévole</a>
+                <a href="don.html" style="color: var(--white); text-decoration: none; opacity: 0.8;">Faire un don</a>
+            </div>
+
+            <div class="footer-bottom" style="margin-top: 2rem;">
+                <p>&copy; 2026 Association Falguière. Tous droits réservés. | <a href="mentions-legales.html" style="text-decoration: underline; opacity: 0.7;">Mentions légales</a> | <a href="politique-confidentialite.html" style="text-decoration: underline; opacity: 0.7;">Politique de confidentialité</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js" defer></script>
     <script>
         let calendar;
         let selectedSelectionInfo = null;

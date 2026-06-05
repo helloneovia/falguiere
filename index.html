@@ -26,6 +26,8 @@
     <link rel="apple-touch-startup-image" href="assets/background-photo.jpg">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="preload" href="assets/background-photo.jpg" as="image">
+
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -181,7 +183,7 @@
                 <!-- Block 1 -->
                 <div class="mission-grid" style="align-items: center; margin-bottom: 4rem;">
                     <div class="mission-image fade-in-up">
-                        <img src="assets/galerie-1.jpg" alt="Quartier Falguière" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" data-cms="galerie-1-img">
+                        <img src="assets/galerie-1.jpg" alt="Quartier Falguière" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" data-cms="galerie-1-img" loading="lazy">
                     </div>
                     <div class="mission-text fade-in-up delay-1">
                         <h3 data-cms="galerie-1-title">La Cité Maillol</h3>
@@ -196,14 +198,14 @@
                         <p data-cms="galerie-2-desc">Falguière fait partie des deux quartiers du 15ème arrondissement à être classés en Quartier Prioritaire de la Politique de la Ville (QPV) en 2024.</p>
                     </div>
                     <div class="mission-image fade-in-up order-1-mobile">
-                        <img src="assets/galerie-2.jpg" alt="Entraide et partage" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" data-cms="galerie-2-img">
+                        <img src="assets/galerie-2.jpg" alt="Entraide et partage" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" data-cms="galerie-2-img" loading="lazy">
                     </div>
                 </div>
                 
                 <!-- Block 3 -->
                 <div class="mission-grid" style="align-items: center; margin-bottom: 4rem;">
                     <div class="mission-image fade-in-up">
-                        <img src="assets/galerie-3.jpg" alt="Activités pour tous" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" data-cms="galerie-3-img">
+                        <img src="assets/galerie-3.jpg" alt="Activités pour tous" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" data-cms="galerie-3-img" loading="lazy">
                     </div>
                     <div class="mission-text fade-in-up delay-1">
                         <h3 data-cms="galerie-3-title">Lutte contre la précarité</h3>
@@ -218,14 +220,14 @@
                         <p data-cms="galerie-4-desc">La rue et le quartier doivent leur nom actuel au peintre et sculpteur Alexandre Falguière (1831-1900). Nous perpétuons cette histoire à travers nos actions sur le terrain.</p>
                     </div>
                     <div class="mission-image fade-in-up order-1-mobile">
-                        <img src="assets/galerie-4.jpg" alt="Solidarité en action" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" data-cms="galerie-4-img">
+                        <img src="assets/galerie-4.jpg" alt="Solidarité en action" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" data-cms="galerie-4-img" loading="lazy">
                     </div>
                 </div>
                 
                 <!-- Block 5 -->
                 <div class="mission-grid" style="align-items: center;">
                     <div class="mission-image fade-in-up">
-                        <img src="assets/galerie-5.jpg" alt="Sourires du quartier" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" data-cms="galerie-5-img">
+                        <img src="assets/galerie-5.jpg" alt="Sourires du quartier" style="width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" data-cms="galerie-5-img" loading="lazy">
                     </div>
                     <div class="mission-text fade-in-up delay-1">
                         <h3 data-cms="galerie-5-title">Notre engagement</h3>
@@ -299,10 +301,31 @@
         </div>
     </section>
 
-    <!-- Footer Placeholder -->
-    <div id="footer-placeholder"></div>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container text-center">
+            <div class="footer-logo">
+                <span class="logo-accent">FAL</span>GUIÈRE
+            </div>
+            <img src="assets/logo.png" alt="Logo Association Falguière" style="max-width: 150px; margin: 1.5rem auto; display: block; opacity: 0.9;" loading="lazy">
+            <p class="footer-text" data-cms="footer-desc">L'association pour le développement et la solidarité du quartier Falguière à Paris 15e.</p>
+            <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem; font-weight: bold;">Association Loi 1901 à but non lucratif - N° RNA : W751284066</p>
 
-    <script src="script.js"></script>
+            <div style="display: flex; justify-content: center; gap: 2rem; margin-top: 2rem; flex-wrap: wrap;">
+                <a href="index.html" style="color: var(--white); text-decoration: none; opacity: 0.8;">Accueil</a>
+                <a href="projets.html" style="color: var(--white); text-decoration: none; opacity: 0.8;">Projets</a>
+                <a href="agenda.html" style="color: var(--white); text-decoration: none; opacity: 0.8;">Agenda</a>
+                <a href="benevole.html" style="color: var(--white); text-decoration: none; opacity: 0.8;">Devenir Bénévole</a>
+                <a href="don.html" style="color: var(--white); text-decoration: none; opacity: 0.8;">Faire un don</a>
+            </div>
+
+            <div class="footer-bottom" style="margin-top: 2rem;">
+                <p>&copy; 2026 Association Falguière. Tous droits réservés. | <a href="mentions-legales.html" style="text-decoration: underline; opacity: 0.7;">Mentions légales</a> | <a href="politique-confidentialite.html" style="text-decoration: underline; opacity: 0.7;">Politique de confidentialité</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js" defer></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

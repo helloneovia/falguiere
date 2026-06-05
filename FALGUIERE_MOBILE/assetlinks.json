@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "org.falguiere.twa",
+        "sha256_cert_fingerprints": ["6C:B8:F6:93:45:6D:52:A8:48:B4:34:23:A0:E2:BF:3D:EB:30:73:80:18:45:82:72:18:F2:67:97:A1:8A:FC:8D"]
+      }
+    }]

@@ -164,10 +164,58 @@
         </div>
     </section>
 
-    <!-- Footer Placeholder -->
-    <div id="footer-placeholder"></div>
+    <!-- Impact & CTA Section -->
+    <section class="section" style="padding: 4rem 0; text-align: center;">
+        <div class="container">
+            <h2 style="font-size: 2rem; margin-bottom: 1rem;">Pourquoi s'engager avec nous ?</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 2rem; text-align: left;">
+                <div style="background: white; padding: 2rem; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                    <h3 style="color: var(--primary); margin-bottom: 1rem;">Solidarité locale</h3>
+                    <p>En tant qu'Association Loi 1901 à but non lucratif, nous agissons directement au cœur du 15ème arrondissement pour lutter contre l'isolement et la précarité.</p>
+                </div>
+                <div style="background: white; padding: 2rem; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                    <h3 style="color: var(--primary); margin-bottom: 1rem;">Projets concrets</h3>
+                    <p>Votre engagement permet de réaliser des distributions alimentaires, du soutien scolaire et des événements qui animent la Cité Maillol et ses alentours.</p>
+                </div>
+                <div style="background: white; padding: 2rem; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                    <h3 style="color: var(--primary); margin-bottom: 1rem;">Une communauté soudée</h3>
+                    <p>Rejoignez une équipe dynamique et bienveillante. Rencontrez vos voisins et participez à la création d'un cadre de vie plus solidaire.</p>
+                </div>
+            </div>
+            
+            <div style="margin-top: 3rem; background: var(--primary); color: white; padding: 3rem; border-radius: var(--radius-lg);">
+                <h3 style="font-size: 1.8rem; margin-bottom: 1rem;">Vous ne pouvez pas donner de temps ?</h3>
+                <p style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">Vos dons financiers sont également essentiels pour financer nos actions de terrain et acheter des denrées pour les plus démunis.</p>
+                <a href="don.html" class="btn btn-outline" style="border-color: white; color: white;">Faire un don ponctuel ou mensuel</a>
+            </div>
+        </div>
+    </section>
 
-    <script src="script.js"></script>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container text-center">
+            <div class="footer-logo">
+                <span class="logo-accent">FAL</span>GUIÈRE
+            </div>
+            <img src="assets/logo.png" alt="Logo Association Falguière" style="max-width: 150px; margin: 1.5rem auto; display: block; opacity: 0.9;" loading="lazy">
+            <p class="footer-text" data-cms="footer-desc">L'association pour le développement et la solidarité du quartier Falguière à Paris 15e.</p>
+            <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem; font-weight: bold;">Association Loi 1901 à but non lucratif - N° RNA : W751284066</p>
+
+            <div style="display: flex; justify-content: center; gap: 2rem; margin-top: 2rem; flex-wrap: wrap;">
+                <a href="index.html" style="color: var(--white); text-decoration: none; opacity: 0.8;">Accueil</a>
+                <a href="projets.html" style="color: var(--white); text-decoration: none; opacity: 0.8;">Projets</a>
+                <a href="agenda.html" style="color: var(--white); text-decoration: none; opacity: 0.8;">Agenda</a>
+                <a href="benevole.html" style="color: var(--white); text-decoration: none; opacity: 0.8;">Devenir Bénévole</a>
+                <a href="don.html" style="color: var(--white); text-decoration: none; opacity: 0.8;">Faire un don</a>
+            </div>
+
+            <div class="footer-bottom" style="margin-top: 2rem;">
+                <p>&copy; 2026 Association Falguière. Tous droits réservés. | <a href="mentions-legales.html" style="text-decoration: underline; opacity: 0.7;">Mentions légales</a> | <a href="politique-confidentialite.html" style="text-decoration: underline; opacity: 0.7;">Politique de confidentialité</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js" defer></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('volunteerForm');
