@@ -27,7 +27,8 @@
     <link rel="apple-touch-startup-image" href="assets/background-photo.jpg">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <link rel="preload" href="assets/background-photo.webp" as="image" type="image/webp" fetchpriority="high">
+    <link rel="preload" href="assets/background-photo-mobile.webp" as="image" type="image/webp" media="(max-width: 768px)" fetchpriority="high">
+    <link rel="preload" href="assets/background-photo.webp" as="image" type="image/webp" media="(min-width: 769px)" fetchpriority="high">
 
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -66,7 +67,9 @@
     <header class="hero">
         <div class="hero-bg">
             <picture>
+                <source type="image/webp" media="(max-width: 768px)" srcset="assets/background-photo-mobile.webp">
                 <source type="image/webp" srcset="assets/background-photo.webp">
+                <source media="(max-width: 768px)" srcset="assets/background-photo-mobile.jpg">
                 <img src="assets/background-photo.jpg" alt="Journée solidaire dans le quartier Falguière" data-cms="hero-img" width="1024" height="1024" fetchpriority="high" decoding="async">
             </picture>
             <div class="hero-overlay"></div>

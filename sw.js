@@ -1,4 +1,4 @@
-const CACHE_NAME = 'falguiere-cache-v10';
+const CACHE_NAME = 'falguiere-cache-v11';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -17,6 +17,8 @@ const urlsToCache = [
   '/assets/screenshot-narrow.jpg',
   '/assets/background-photo.jpg',
   '/assets/background-photo.webp',
+  '/assets/background-photo-mobile.webp',
+  '/assets/background-photo-mobile.jpg',
   '/assets/galerie-1.jpg',
   '/assets/galerie-2.jpg',
   '/assets/galerie-3.jpg',
