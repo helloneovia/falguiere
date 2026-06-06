@@ -1,4 +1,4 @@
-const CACHE_NAME = 'falguiere-cache-v9';
+const CACHE_NAME = 'falguiere-cache-v10';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -16,11 +16,17 @@ const urlsToCache = [
   '/assets/screenshot-wide.jpg',
   '/assets/screenshot-narrow.jpg',
   '/assets/background-photo.jpg',
+  '/assets/background-photo.webp',
   '/assets/galerie-1.jpg',
   '/assets/galerie-2.jpg',
   '/assets/galerie-3.jpg',
   '/assets/galerie-4.jpg',
-  '/assets/galerie-5.jpg'
+  '/assets/galerie-5.jpg',
+  '/assets/galerie-1.webp',
+  '/assets/galerie-2.webp',
+  '/assets/galerie-3.webp',
+  '/assets/galerie-4.webp',
+  '/assets/galerie-5.webp'
 ];
 
 self.addEventListener('install', event => {

@@ -27,7 +27,7 @@
     <link rel="apple-touch-startup-image" href="assets/background-photo.jpg">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <link rel="preload" href="assets/background-photo.jpg" as="image" fetchpriority="high">
+    <link rel="preload" href="assets/background-photo.webp" as="image" type="image/webp" fetchpriority="high">
 
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -65,7 +65,10 @@
     <!-- Hero Section -->
     <header class="hero">
         <div class="hero-bg">
-            <img src="assets/background-photo.jpg" alt="Journée solidaire dans le quartier Falguière" data-cms="hero-img" width="1024" height="1024" fetchpriority="high" decoding="async">
+            <picture>
+                <source type="image/webp" srcset="assets/background-photo.webp">
+                <img src="assets/background-photo.jpg" alt="Journée solidaire dans le quartier Falguière" data-cms="hero-img" width="1024" height="1024" fetchpriority="high" decoding="async">
+            </picture>
             <div class="hero-overlay"></div>
         </div>
         <div class="hero-content">
@@ -184,7 +187,10 @@
                 <!-- Block 1 -->
                 <div class="mission-grid" style="align-items: center; margin-bottom: 4rem;">
                     <div class="mission-image fade-in-up">
-                        <img src="assets/galerie-1.jpg" alt="Quartier Falguière" style="width: 100%; height: auto; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" data-cms="galerie-1-img" loading="lazy" decoding="async" width="1024" height="768">
+                        <picture>
+                            <source type="image/webp" srcset="assets/galerie-1.webp">
+                            <img src="assets/galerie-1.jpg" alt="Quartier Falguière" style="width: 100%; height: auto; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" data-cms="galerie-1-img" loading="lazy" decoding="async" width="1024" height="768">
+                        </picture>
                     </div>
                     <div class="mission-text fade-in-up delay-1">
                         <h3 data-cms="galerie-1-title">La Cité Maillol</h3>
@@ -199,14 +205,20 @@
                         <p data-cms="galerie-2-desc">Falguière fait partie des deux quartiers du 15ème arrondissement à être classés en Quartier Prioritaire de la Politique de la Ville (QPV) en 2024.</p>
                     </div>
                     <div class="mission-image fade-in-up order-1-mobile">
-                        <img src="assets/galerie-2.jpg" alt="Entraide et partage" style="width: 100%; height: auto; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" data-cms="galerie-2-img" loading="lazy" decoding="async" width="1024" height="768">
+                        <picture>
+                            <source type="image/webp" srcset="assets/galerie-2.webp">
+                            <img src="assets/galerie-2.jpg" alt="Entraide et partage" style="width: 100%; height: auto; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" data-cms="galerie-2-img" loading="lazy" decoding="async" width="1024" height="768">
+                        </picture>
                     </div>
                 </div>
                 
                 <!-- Block 3 -->
                 <div class="mission-grid" style="align-items: center; margin-bottom: 4rem;">
                     <div class="mission-image fade-in-up">
-                        <img src="assets/galerie-3.jpg" alt="Activités pour tous" style="width: 100%; height: auto; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" data-cms="galerie-3-img" loading="lazy" decoding="async" width="1024" height="768">
+                        <picture>
+                            <source type="image/webp" srcset="assets/galerie-3.webp">
+                            <img src="assets/galerie-3.jpg" alt="Activités pour tous" style="width: 100%; height: auto; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" data-cms="galerie-3-img" loading="lazy" decoding="async" width="1024" height="768">
+                        </picture>
                     </div>
                     <div class="mission-text fade-in-up delay-1">
                         <h3 data-cms="galerie-3-title">Lutte contre la précarité</h3>
@@ -221,14 +233,20 @@
                         <p data-cms="galerie-4-desc">La rue et le quartier doivent leur nom actuel au peintre et sculpteur Alexandre Falguière (1831-1900). Nous perpétuons cette histoire à travers nos actions sur le terrain.</p>
                     </div>
                     <div class="mission-image fade-in-up order-1-mobile">
-                        <img src="assets/galerie-4.jpg" alt="Solidarité en action" style="width: 100%; height: auto; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" data-cms="galerie-4-img" loading="lazy" decoding="async" width="1024" height="768">
+                        <picture>
+                            <source type="image/webp" srcset="assets/galerie-4.webp">
+                            <img src="assets/galerie-4.jpg" alt="Solidarité en action" style="width: 100%; height: auto; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" data-cms="galerie-4-img" loading="lazy" decoding="async" width="1024" height="768">
+                        </picture>
                     </div>
                 </div>
                 
                 <!-- Block 5 -->
                 <div class="mission-grid" style="align-items: center;">
                     <div class="mission-image fade-in-up">
-                        <img src="assets/galerie-5.jpg" alt="Sourires du quartier" style="width: 100%; height: auto; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" data-cms="galerie-5-img" loading="lazy" decoding="async" width="1024" height="768">
+                        <picture>
+                            <source type="image/webp" srcset="assets/galerie-5.webp">
+                            <img src="assets/galerie-5.jpg" alt="Sourires du quartier" style="width: 100%; height: auto; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" data-cms="galerie-5-img" loading="lazy" decoding="async" width="1024" height="768">
+                        </picture>
                     </div>
                     <div class="mission-text fade-in-up delay-1">
                         <h3 data-cms="galerie-5-title">Notre engagement</h3>
@@ -276,7 +294,7 @@
                     </ul>
                     
                     <div class="map-container" style="margin-top: 2rem; border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm);">
-                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2625.5905187702816!2d2.316828!3d48.8402513!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47e6703541bd1e33%3A0xc31481b7e62a0df8!2s133%20Rue%20Falgui%C3%A8re%2C%2075015%20Paris!5e0!3m2!1sfr!2sfr!4v1713530000000!5m2!1sfr!2sfr" width="100%" height="200" style="border:0; display: block;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2625.5905187702816!2d2.316828!3d48.8402513!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47e6703541bd1e33%3A0xc31481b7e62a0df8!2s133%20Rue%20Falgui%C3%A8re%2C%2075015%20Paris!5e0!3m2!1sfr!2sfr!4v1713530000000!5m2!1sfr!2sfr" width="100%" height="200" style="border:0; display: block;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Carte de localisation - Association Falguière, 133 rue Falguière, 75015 Paris"></iframe>
                     </div>
                 </div>
                 

@@ -167,6 +167,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     const key = el.getAttribute('data-cms');
                     if (cmsData[key]) {
                         if (el.tagName === 'IMG') {
+                            // If wrapped in <picture>, drop the <source> elements so the
+                            // CMS-provided image (which may not be a WebP) is used.
+                            const picture = el.closest('picture');
+                            if (picture) {
+                                picture.querySelectorAll('source').forEach(s => s.remove());
+                            }
                             el.src = cmsData[key];
                         } else {
                             el.innerHTML = cmsData[key];
