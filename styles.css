@@ -1,6 +1,6 @@
 :root {
-    --primary: #d97743; /* Warm terracotta/orange for hope and action */
-    --primary-hover: #c06535;
+    --primary: #b0541f; /* Warm terracotta/orange for hope and action (AA-contrast on white) */
+    --primary-hover: #964618;
     --primary-light: #fbeae1;
     --dark: #1e1e24;
     --dark-muted: #4a4a52;

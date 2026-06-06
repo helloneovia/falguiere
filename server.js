@@ -1,6 +1,7 @@
 const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
+const compression = require('compression');
 const path = require('path');
 const multer = require('multer');
 const fs = require('fs');
@@ -17,10 +18,25 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 // Middleware
+app.use(compression()); // Gzip/Brotli compression for text assets (HTML, CSS, JS, JSON)
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '.'))); // Serve static files from current directory
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Serve uploads directory
+
+// Serve static files with sensible cache lifetimes for better performance scores.
+const staticCacheControl = (res, filePath) => {
+  if (/\.(?:jpg|jpeg|png|webp|gif|svg|ico|woff2?|ttf|eot)$/i.test(filePath)) {
+    // Fingerprint-stable media/fonts: cache aggressively.
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  } else if (/\.(?:css|js)$/i.test(filePath)) {
+    // CSS/JS can change between deploys; cache a day, the service worker keeps them fresh.
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+  } else if (/\.html?$/i.test(filePath)) {
+    // Always revalidate HTML so content updates are picked up immediately.
+    res.setHeader('Cache-Control', 'no-cache');
+  }
+};
+app.use(express.static(path.join(__dirname, '.'), { setHeaders: staticCacheControl })); // Serve static files from current directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), { setHeaders: staticCacheControl })); // Serve uploads directory
 
 // Configure Multer for file uploads
 const storage = multer.diskStorage({
