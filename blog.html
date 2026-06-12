@@ -14,8 +14,8 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Mentions légales de l'Association Falguière.">
-    <title>Mentions Légales | Association Falguière</title>
+    <meta name="description" content="Le blog de l'association Falguière : actualités, nouvelles et coulisses de nos actions de solidarité dans le quartier Falguière à Paris 15e.">
+    <title>Blog | Association Falguière</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" media="print" onload="this.media='all'">
@@ -23,31 +23,18 @@
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css?v=2">
     <style>
-        .privacy-section {
+        .projects-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #ff9e6d 100%);
+            color: white;
             padding: 8rem 0 4rem;
-            min-height: 100vh;
+            text-align: center;
         }
-        .privacy-content {
-            background: var(--white);
-            padding: 3rem;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-md);
+        .blog-section {
+            padding: 4rem 0;
         }
-        .privacy-content h1 {
-            color: var(--primary);
-            margin-bottom: 2rem;
-        }
-        .privacy-content h2 {
-            margin-top: 2rem;
-            margin-bottom: 1rem;
-            font-size: 1.5rem;
-        }
-        .privacy-content p, .privacy-content ul {
-            margin-bottom: 1rem;
-            line-height: 1.6;
-        }
-        .privacy-content ul {
-            padding-left: 2rem;
+        .blog-embed {
+            max-width: 900px;
+            margin: 0 auto;
         }
     </style>
 </head>
@@ -59,11 +46,9 @@
                 <span class="logo-accent">FAL</span>GUIÈRE
             </a>
             <div class="nav-links">
-                <a href="index.html#mission">Notre Mission</a>
-                <a href="index.html#actions">Nos Actions</a>
                 <a href="projets.html">Projets</a>
                 <a href="agenda.html">Agenda</a>
-                <a href="blog.html">Blog</a>
+                <a href="blog.html" class="active">Blog</a>
                 <a href="benevole.html">Bénévolat</a>
                 <a href="index.html#adhesion" class="btn btn-primary">Nous Rejoindre</a>
                 <a href="don.html" class="btn btn-outline">Faire un don</a>
@@ -78,8 +63,6 @@
 
     <!-- Mobile Menu -->
     <div class="mobile-menu">
-        <a href="index.html#mission" class="mobile-link">Notre Mission</a>
-        <a href="index.html#actions" class="mobile-link">Nos Actions</a>
         <a href="projets.html" class="mobile-link">Projets</a>
         <a href="agenda.html" class="mobile-link">Agenda</a>
         <a href="blog.html" class="mobile-link">Blog</a>
@@ -88,36 +71,20 @@
         <a href="don.html" class="btn btn-outline w-full text-center mt-2 mobile-link">Faire un don</a>
     </div>
 
-    <!-- Privacy Content -->
-    <section class="section privacy-section bg-light">
+    <!-- Header -->
+    <header class="projects-header">
         <div class="container">
-            <div class="privacy-content">
-                <h1>Mentions Légales</h1>
-                <p><strong>Conformément aux dispositions de la loi pour la confiance dans l'économie numérique (LCEN), voici les mentions légales relatives au site web de l'Association FALGUIÈRE.</strong></p>
-                
-                <h2>1. Informations sur l'Association</h2>
-                <ul>
-                    <li><strong>Association :</strong> FALGUIERE</li>
-                    <li><strong>Dénomination :</strong> FALGUIERE</li>
-                    <li><strong>Catégorie juridique :</strong> 9220 - Association déclarée</li>
-                    <li><strong>Siège Social :</strong> 133 Rue Falguière, 75015 Paris</li>
-                    <li><strong>Identifiant SIREN :</strong> 104 564 927</li>
-                    <li><strong>Identifiant SIRET :</strong> 104 564 927 00010</li>
-                    <li><strong>N° RNA :</strong> W751284066</li>
-                </ul>
+            <h1 style="font-size: 3rem; margin-bottom: 1rem;">Le Blog</h1>
+            <p style="font-size: 1.2rem; opacity: 0.9; max-width: 600px; margin: 0 auto;">Actualités, nouvelles et coulisses de nos actions de solidarité dans le quartier.</p>
+        </div>
+    </header>
 
-                <h2>2. Contact</h2>
-                <ul>
-                    <li><strong>Téléphone :</strong> <a href="tel:0187652429">01 87 65 24 29</a></li>
-                    <li><strong>Email :</strong> <a href="mailto:asso@falguiere.org">asso@falguiere.org</a></li>
-                    <li><strong>Site Web :</strong> <a href="https://falguiere.org" target="_blank" rel="noopener">Falguiere.org</a></li>
-                </ul>
-
-                <h2>3. Hébergement</h2>
-                <p>Le site web est hébergé par :</p>
-                <ul>
-                    <li><strong>Hébergement :</strong> Hébergé en France chez Hostinger</li>
-                </ul>
+    <!-- Blog Section -->
+    <section class="blog-section">
+        <div class="container">
+            <div class="blog-embed">
+                <div id="adneo-blog"></div>
+                <script src="https://adneo.cloud/api/embed/cmq9h3iw900021ysavi1ixe1x?theme=dark" defer></script>
             </div>
         </div>
     </section>
