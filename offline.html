@@ -1,13 +1,19 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <!-- CookieYes CMP -->
-    <script id="cookieyes" type="text/javascript" src="https://cdn-cookieyes.com/client_data/717e3046768efe1db2b6e1a6/script.js"></script>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18139121395"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+      // Consent Mode v2 : tout refuse par defaut tant que le visiteur n'a pas accepte
+      gtag('consent', 'default', {
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        analytics_storage: 'denied',
+        wait_for_update: 500
+      });
       gtag('js', new Date());
 
       gtag('config', 'AW-18139121395');
@@ -63,5 +69,6 @@
     <div class="error-message">
         Il semble qu'une erreur est apparue, n'hésitez pas à nous contacter
     </div>
+    <script src="cookie-consent.js" defer></script>
 </body>
 </html>

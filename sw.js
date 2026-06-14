@@ -1,4 +1,4 @@
-const CACHE_NAME = 'falguiere-cache-v13';
+const CACHE_NAME = 'falguiere-cache-v14';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -11,6 +11,7 @@ const urlsToCache = [
   '/footer.html',
   '/styles.css',
   '/script.js',
+  '/cookie-consent.js',
   '/assets/favicon.svg',
   '/assets/icon-192x192.png',
   '/assets/icon-512x512.png',
