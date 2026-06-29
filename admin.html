@@ -173,6 +173,7 @@
                     <li><a onclick="switchTab('projects')" id="nav-projects">💡 Idées Projets</a></li>
                     <li><a onclick="switchTab('cms')" id="nav-cms">✏️ Éditeur de Site</a></li>
                     <li><a onclick="switchTab('settings')" id="nav-settings">⚙️ Paramètres API</a></li>
+                    <li><a onclick="openProvenance()" id="nav-provenance">📍 Provenance des visiteurs</a></li>
                     <li style="margin-top: 2rem;"><a onclick="logout()" id="nav-logout" style="color: #ef4444; cursor: pointer;">🚪 Déconnexion</a></li>
                 </ul>
                 <div style="margin-top: auto; padding-top: 1rem;">
@@ -538,6 +539,119 @@
                     <button class="btn btn-primary" onclick="saveSettings()" style="margin-top: 1rem;">Enregistrer les paramètres</button>
                 </div>
             </div>
+
+            <!-- TAB 6: Provenance des visiteurs -->
+            <div id="tab-provenance" class="tab-content">
+                <style>
+                    .prov-period { border: 1px solid #e2e8f0; background: #fff; }
+                    .prov-period.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+                </style>
+                <h1 style="margin-bottom: 0.5rem;">Provenance des visiteurs</h1>
+                <p style="color: var(--dark-muted); margin-bottom: 2rem;">D'où viennent nos visiteurs. Mesure d'audience interne, sans cookie ni adresse IP.</p>
+
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; align-items: center;">
+                    <span style="font-weight: 600;">Période :</span>
+                    <button class="btn-sm prov-period" data-days="7" onclick="renderProvenance(7)">7 jours</button>
+                    <button class="btn-sm prov-period active" data-days="30" onclick="renderProvenance(30)">30 jours</button>
+                    <button class="btn-sm prov-period" data-days="90" onclick="renderProvenance(90)">90 jours</button>
+                    <button class="btn-sm prov-period" data-days="365" onclick="renderProvenance(365)">1 an</button>
+                    <button class="btn-sm" style="margin-left:auto;" onclick="renderProvenance()">🔄 Actualiser</button>
+                </div>
+
+                <div class="prov-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <div class="admin-card" style="text-align:center;">
+                        <div style="font-size: 2.2rem; font-weight: 800; color: var(--primary);" id="provTotal">—</div>
+                        <div style="color: var(--dark-muted);">Visites sur la période</div>
+                    </div>
+                    <div class="admin-card" style="text-align:center;">
+                        <div style="font-size: 1.4rem; font-weight: 700;" id="provTopSource">—</div>
+                        <div style="color: var(--dark-muted);">Source principale</div>
+                    </div>
+                    <div class="admin-card" style="text-align:center;">
+                        <div style="font-size: 1.4rem; font-weight: 700;" id="provQrVisits">—</div>
+                        <div style="color: var(--dark-muted);">Visites via QR code</div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <div class="admin-card">
+                        <h2><span>📊 Répartition par source</span></h2>
+                        <div style="position: relative; height: 280px;"><canvas id="provSourceChart"></canvas></div>
+                    </div>
+                    <div class="admin-card">
+                        <h2><span>📈 Visites par jour</span></h2>
+                        <div style="position: relative; height: 280px;"><canvas id="provDayChart"></canvas></div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+                    <div class="admin-card">
+                        <h2><span>🔗 Sites référents</span></h2>
+                        <div class="table-responsive">
+                            <table><thead><tr><th>Domaine</th><th>Visites</th></tr></thead>
+                            <tbody id="provReferrersBody"></tbody></table>
+                        </div>
+                    </div>
+                    <div class="admin-card">
+                        <h2><span>🏷️ Campagnes (paramètre source)</span></h2>
+                        <div class="table-responsive">
+                            <table><thead><tr><th>Source</th><th>Visites</th></tr></thead>
+                            <tbody id="provCampaignsBody"></tbody></table>
+                        </div>
+                    </div>
+                    <div class="admin-card">
+                        <h2><span>📄 Pages d'entrée</span></h2>
+                        <div class="table-responsive">
+                            <table><thead><tr><th>Page</th><th>Visites</th></tr></thead>
+                            <tbody id="provLandingBody"></tbody></table>
+                        </div>
+                    </div>
+                    <div class="admin-card">
+                        <h2><span>📱 Appareils</span></h2>
+                        <div class="table-responsive">
+                            <table><thead><tr><th>Type</th><th>Visites</th></tr></thead>
+                            <tbody id="provDeviceBody"></tbody></table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Générateur de QR code -->
+                <div class="admin-card" style="margin-top: 1.5rem;">
+                    <h2><span>📱 Générateur de QR code</span></h2>
+                    <p style="color: var(--dark-muted); margin-bottom: 1rem;">Créez un QR code (flyer, affiche, stand…). Toute visite via ce code sera comptabilisée dans la source choisie ci-dessus.</p>
+                    <div style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: flex-start;">
+                        <div style="flex: 1 1 280px;">
+                            <div class="cms-field">
+                                <label for="qrSource">Étiquette de source</label>
+                                <input type="text" id="qrSource" value="qr" placeholder="ex : qr, flyer, affiche-marché" oninput="updateQrPreview()">
+                                <small style="color: var(--dark-muted);">Lettres, chiffres, tirets uniquement.</small>
+                            </div>
+                            <div class="cms-field">
+                                <label for="qrPage">Page de destination</label>
+                                <select id="qrPage" onchange="updateQrPreview()">
+                                    <option value="/">Accueil</option>
+                                    <option value="/don.html">Faire un don</option>
+                                    <option value="/benevole.html">Devenir bénévole</option>
+                                    <option value="/blog.html">Blog</option>
+                                    <option value="/projets.html">Projets</option>
+                                    <option value="/agenda.html">Agenda</option>
+                                </select>
+                            </div>
+                            <div class="cms-field">
+                                <label>Lien encodé</label>
+                                <input type="text" id="qrUrl" readonly style="background: var(--gray-bg);">
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <a id="qrDownloadPng" class="btn btn-primary btn-sm" href="#" download>⬇️ Télécharger (PNG)</a>
+                                <a id="qrDownloadSvg" class="btn btn-outline btn-sm" href="#" target="_blank" rel="noopener">SVG (impression)</a>
+                            </div>
+                        </div>
+                        <div style="flex: 0 0 auto; text-align: center;">
+                            <img id="qrPreview" src="" alt="Aperçu du QR code" width="220" height="220" style="border: 1px solid var(--gray-bg); border-radius: var(--radius-md); background: #fff;">
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -607,6 +721,106 @@
             
             const menu = document.getElementById('adminMenuCollapse');
             if (menu) menu.classList.remove('open');
+        }
+
+        // ---- Provenance des visiteurs ----
+        var provSourceChartInstance = null;
+        var provDayChartInstance = null;
+        var provCurrentDays = 30;
+
+        function provEscape(s) {
+            return String(s).replace(/[&<>"']/g, function (c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+            });
+        }
+
+        function openProvenance() {
+            switchTab('provenance');
+            renderProvenance(provCurrentDays);
+            if (!window.__qrBase) {
+                fetch('/api/config').then(function (r) { return r.json(); })
+                    .then(function (c) { window.__qrBase = c.baseUrl; updateQrPreview(); })
+                    .catch(function () {});
+            }
+            updateQrPreview();
+        }
+
+        function provFillTable(tbodyId, rows, keyName, emptyMsg) {
+            var tbody = document.getElementById(tbodyId);
+            if (!rows || rows.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="2" class="empty-state">' + (emptyMsg || 'Aucune donnée.') + '</td></tr>';
+                return;
+            }
+            tbody.innerHTML = rows.map(function (r) {
+                var label = r[keyName];
+                if (label === null || label === undefined || label === '') label = '(inconnu)';
+                return '<tr><td>' + provEscape(label) + '</td><td><strong>' + r.c + '</strong></td></tr>';
+            }).join('');
+        }
+
+        async function renderProvenance(days) {
+            if (days) provCurrentDays = days;
+            document.querySelectorAll('.prov-period').forEach(function (b) {
+                b.classList.toggle('active', parseInt(b.dataset.days, 10) === provCurrentDays);
+            });
+            try {
+                const res = await fetch('/api/analytics?days=' + provCurrentDays);
+                if (!res.ok) throw new Error('API');
+                const d = await res.json();
+
+                document.getElementById('provTotal').textContent = d.totalVisits;
+                document.getElementById('provTopSource').textContent = (d.bySource[0] ? d.bySource[0].source : '—');
+                var qr = d.bySource.find(function (s) { return s.source === 'QR Code'; });
+                document.getElementById('provQrVisits').textContent = qr ? qr.c : 0;
+
+                provFillTable('provReferrersBody', d.byReferrerDomain, 'domain', 'Aucun site référent.');
+                provFillTable('provCampaignsBody', d.byCampaign, 'raw_source', 'Aucune campagne taguée (?source=).');
+                provFillTable('provLandingBody', d.byLandingPage, 'page');
+                provFillTable('provDeviceBody', d.byDevice, 'device');
+
+                renderProvSourceChart(d.bySource);
+                renderProvDayChart(d.byDay);
+            } catch (e) {
+                console.error(e);
+                document.getElementById('provTotal').textContent = 'Err';
+            }
+        }
+
+        function renderProvSourceChart(rows) {
+            var ctx = document.getElementById('provSourceChart').getContext('2d');
+            if (provSourceChartInstance) provSourceChartInstance.destroy();
+            var palette = ['#b0541f', '#d97743', '#e0a572', '#1e1e24', '#6b7280', '#9ca3af', '#c084fc', '#34d399', '#f59e0b', '#60a5fa'];
+            provSourceChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: rows.map(function (r) { return r.source; }),
+                    datasets: [{ data: rows.map(function (r) { return r.c; }), backgroundColor: palette }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        function renderProvDayChart(rows) {
+            var ctx = document.getElementById('provDayChart').getContext('2d');
+            if (provDayChartInstance) provDayChartInstance.destroy();
+            provDayChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: rows.map(function (r) { return r.day; }),
+                    datasets: [{ label: 'Visites', data: rows.map(function (r) { return r.c; }), borderColor: '#b0541f', backgroundColor: 'rgba(176,84,31,0.15)', fill: true, tension: 0.3 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+            });
+        }
+
+        function updateQrPreview() {
+            var src = (document.getElementById('qrSource').value || 'qr').replace(/[^a-zA-Z0-9_-]/g, '') || 'qr';
+            var page = document.getElementById('qrPage').value || '/';
+            var api = '/api/qrcode?source=' + encodeURIComponent(src) + '&page=' + encodeURIComponent(page);
+            document.getElementById('qrPreview').src = api;
+            document.getElementById('qrDownloadPng').href = api + '&download=1';
+            document.getElementById('qrDownloadSvg').href = api + '&format=svg';
+            document.getElementById('qrUrl').value = (window.__qrBase || 'https://falguiere.org') + page + '?source=' + src;
         }
 
         function logout() {

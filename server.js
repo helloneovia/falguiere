@@ -7,9 +7,12 @@ const multer = require('multer');
 const fs = require('fs');
 const Mailjet = require('node-mailjet');
 const stripe = require('stripe');
+const QRCode = require('qrcode');
 
 const app = express();
 const port = process.env.PORT || 3000;
+// Domaine public canonique utilisé pour générer les liens des QR codes.
+const PUBLIC_BASE_URL = (process.env.PUBLIC_BASE_URL || 'https://falguiere.org').replace(/\/$/, '');
 
 // Ensure uploads directory exists
 const uploadDir = path.join(__dirname, 'uploads');
@@ -186,6 +189,22 @@ async function initDB() {
       );
     `);
 
+    // Table Visites (analyse de provenance du trafic - sans cookie, sans IP)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS visits (
+        id SERIAL PRIMARY KEY,
+        source VARCHAR(100),
+        raw_source VARCHAR(255),
+        referrer_domain VARCHAR(255),
+        landing_page VARCHAR(255),
+        utm_medium VARCHAR(255),
+        utm_campaign VARCHAR(255),
+        device VARCHAR(20),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_visits_created_at ON visits (created_at);`);
+
     // Table Comptabilité
     await pool.query(`
       CREATE TABLE IF NOT EXISTS accounting (
@@ -204,6 +223,15 @@ async function initDB() {
 }
 
 initDB();
+
+// Purge des visites de plus de 13 mois (durée max recommandée par la CNIL pour la mesure d'audience).
+async function purgeOldVisits() {
+  try {
+    await pool.query("DELETE FROM visits WHERE created_at < NOW() - INTERVAL '13 months'");
+  } catch (e) { /* table pas encore prête au démarrage : ignoré */ }
+}
+purgeOldVisits();
+setInterval(purgeOldVisits, 24 * 60 * 60 * 1000);
 
 // --- API ROUTES ---
 
@@ -1080,6 +1108,132 @@ app.delete('/api/accounting/:id', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Database error' });
   }
+});
+
+// --- ANALYSE DE PROVENANCE DES VISITEURS ---
+
+// Classe une visite en catégorie lisible à partir de la source explicite (?source=)
+// ou du domaine référent.
+function classifySource(rawSource, referrerDomain) {
+  if (rawSource) {
+    const s = rawSource.toLowerCase();
+    if (s.includes('qr')) return 'QR Code';
+    if (s.includes('flyer') || s.includes('affiche') || s.includes('tract')) return 'Support imprimé';
+    if (s.includes('news') || s.includes('mail') || s.includes('email')) return 'Email / Newsletter';
+    return 'Campagne : ' + rawSource;
+  }
+  if (!referrerDomain) return 'Direct';
+  const d = referrerDomain.toLowerCase();
+  if (/(^|\.)(google|bing|yahoo|duckduckgo|qwant|ecosia|yandex|baidu)\./.test(d)) return 'Moteur de recherche';
+  if (/(facebook|instagram|twitter|x\.com|t\.co|linkedin|tiktok|youtube|pinterest|snapchat|whatsapp|reddit)/.test(d)) return 'Réseaux sociaux';
+  if (d.includes('falguiere')) return 'Navigation interne';
+  return 'Site référent';
+}
+
+// Détecte le type d'appareil à partir du User-Agent (côté serveur, non falsifiable par le payload).
+function detectDevice(ua) {
+  if (!ua) return 'inconnu';
+  if (/ipad|tablet|playbook|silk/i.test(ua)) return 'tablette';
+  if (/mobile|android|iphone|ipod|phone/i.test(ua)) return 'mobile';
+  return 'ordinateur';
+}
+
+// Enregistre une visite (best-effort : ne renvoie jamais d'erreur au visiteur).
+app.post('/api/track', async (req, res) => {
+  try {
+    const body = req.body || {};
+    const referrer = (body.referrer || '').toString().slice(0, 2000);
+    const landing = (body.landing || '/').toString().slice(0, 255) || '/';
+    const rawSource = (body.source || '').toString().trim().slice(0, 255);
+    const utmMedium = (body.utm_medium || '').toString().slice(0, 255);
+    const utmCampaign = (body.utm_campaign || '').toString().slice(0, 255);
+
+    let referrerDomain = '';
+    if (referrer) {
+      try { referrerDomain = new URL(referrer).hostname.slice(0, 255); } catch (e) { referrerDomain = ''; }
+    }
+    const source = classifySource(rawSource, referrerDomain).slice(0, 100);
+    const device = detectDevice(req.headers['user-agent'] || '');
+
+    // On ne stocke que le domaine référent (pas l'URL complète) par minimisation des données.
+    await pool.query(
+      `INSERT INTO visits (source, raw_source, referrer_domain, landing_page, utm_medium, utm_campaign, device, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
+      [source, rawSource || null, referrerDomain || null, landing, utmMedium || null, utmCampaign || null, device]
+    );
+    res.status(204).end();
+  } catch (err) {
+    console.error('track error:', err);
+    res.status(204).end(); // ne jamais casser le chargement de la page visiteur
+  }
+});
+
+// Renvoie les statistiques agrégées de provenance pour l'admin.
+app.get('/api/analytics', async (req, res) => {
+  try {
+    let days = parseInt(req.query.days, 10);
+    if (!Number.isFinite(days) || days < 1) days = 30;
+    if (days > 365) days = 365;
+    const period = `WHERE created_at >= NOW() - make_interval(days => $1)`;
+
+    const [total, bySource, byDomain, byLanding, byDevice, byDay, byCampaign] = await Promise.all([
+      pool.query(`SELECT COUNT(*)::int AS c FROM visits ${period}`, [days]),
+      pool.query(`SELECT source, COUNT(*)::int AS c FROM visits ${period} GROUP BY source ORDER BY c DESC`, [days]),
+      pool.query(`SELECT referrer_domain AS domain, COUNT(*)::int AS c FROM visits ${period} AND referrer_domain IS NOT NULL GROUP BY referrer_domain ORDER BY c DESC LIMIT 15`, [days]),
+      pool.query(`SELECT landing_page AS page, COUNT(*)::int AS c FROM visits ${period} GROUP BY landing_page ORDER BY c DESC LIMIT 15`, [days]),
+      pool.query(`SELECT device, COUNT(*)::int AS c FROM visits ${period} GROUP BY device ORDER BY c DESC`, [days]),
+      pool.query(`SELECT to_char(created_at, 'YYYY-MM-DD') AS day, COUNT(*)::int AS c FROM visits ${period} GROUP BY day ORDER BY day`, [days]),
+      pool.query(`SELECT raw_source, COUNT(*)::int AS c FROM visits ${period} AND raw_source IS NOT NULL GROUP BY raw_source ORDER BY c DESC LIMIT 15`, [days])
+    ]);
+
+    res.json({
+      periodDays: days,
+      totalVisits: total.rows[0].c,
+      bySource: bySource.rows,
+      byReferrerDomain: byDomain.rows,
+      byLandingPage: byLanding.rows,
+      byDevice: byDevice.rows,
+      byDay: byDay.rows,
+      byCampaign: byCampaign.rows
+    });
+  } catch (err) {
+    console.error('analytics error:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// Génère un QR code (PNG par défaut, ou SVG) pointant vers le site avec une source traçable.
+app.get('/api/qrcode', async (req, res) => {
+  try {
+    let source = (req.query.source || 'qr').toString().trim().replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 60) || 'qr';
+    let page = (req.query.page || '/').toString();
+    if (!page.startsWith('/')) page = '/' + page;
+    page = page.replace(/[^a-zA-Z0-9_\-/.]/g, '').slice(0, 100) || '/';
+    const format = (req.query.format || 'png').toString().toLowerCase();
+
+    const targetUrl = PUBLIC_BASE_URL + page + '?source=' + encodeURIComponent(source);
+    const color = { dark: '#1e1e24', light: '#ffffff' };
+
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    if (format === 'svg') {
+      const svg = await QRCode.toString(targetUrl, { type: 'svg', margin: 2, color });
+      res.type('image/svg+xml').send(svg);
+    } else {
+      const buf = await QRCode.toBuffer(targetUrl, { type: 'png', width: 600, margin: 2, color });
+      if (req.query.download) {
+        res.setHeader('Content-Disposition', `attachment; filename="qr-falguiere-${source}.png"`);
+      }
+      res.type('image/png').send(buf);
+    }
+  } catch (err) {
+    console.error('qrcode error:', err);
+    res.status(500).json({ error: 'QR generation error' });
+  }
+});
+
+// Configuration publique pour l'admin (ex : domaine canonique utilisé dans les QR codes).
+app.get('/api/config', (req, res) => {
+  res.json({ baseUrl: PUBLIC_BASE_URL });
 });
 
 // Admin route
