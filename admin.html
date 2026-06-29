@@ -737,6 +737,11 @@
         function openProvenance() {
             switchTab('provenance');
             renderProvenance(provCurrentDays);
+            if (!window.__qrBase) {
+                fetch('/api/config').then(function (r) { return r.json(); })
+                    .then(function (c) { window.__qrBase = c.baseUrl; updateQrPreview(); })
+                    .catch(function () {});
+            }
             updateQrPreview();
         }
 
@@ -815,7 +820,7 @@
             document.getElementById('qrPreview').src = api;
             document.getElementById('qrDownloadPng').href = api + '&download=1';
             document.getElementById('qrDownloadSvg').href = api + '&format=svg';
-            document.getElementById('qrUrl').value = 'https://falguiere.org' + page + '?source=' + src;
+            document.getElementById('qrUrl').value = (window.__qrBase || 'https://falguiere.org') + page + '?source=' + src;
         }
 
         function logout() {

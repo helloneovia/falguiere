@@ -195,7 +195,6 @@ async function initDB() {
         id SERIAL PRIMARY KEY,
         source VARCHAR(100),
         raw_source VARCHAR(255),
-        referrer TEXT,
         referrer_domain VARCHAR(255),
         landing_page VARCHAR(255),
         utm_medium VARCHAR(255),
@@ -224,6 +223,15 @@ async function initDB() {
 }
 
 initDB();
+
+// Purge des visites de plus de 13 mois (durée max recommandée par la CNIL pour la mesure d'audience).
+async function purgeOldVisits() {
+  try {
+    await pool.query("DELETE FROM visits WHERE created_at < NOW() - INTERVAL '13 months'");
+  } catch (e) { /* table pas encore prête au démarrage : ignoré */ }
+}
+purgeOldVisits();
+setInterval(purgeOldVisits, 24 * 60 * 60 * 1000);
 
 // --- API ROUTES ---
 
@@ -1144,13 +1152,14 @@ app.post('/api/track', async (req, res) => {
     if (referrer) {
       try { referrerDomain = new URL(referrer).hostname.slice(0, 255); } catch (e) { referrerDomain = ''; }
     }
-    const source = classifySource(rawSource, referrerDomain);
+    const source = classifySource(rawSource, referrerDomain).slice(0, 100);
     const device = detectDevice(req.headers['user-agent'] || '');
 
+    // On ne stocke que le domaine référent (pas l'URL complète) par minimisation des données.
     await pool.query(
-      `INSERT INTO visits (source, raw_source, referrer, referrer_domain, landing_page, utm_medium, utm_campaign, device, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())`,
-      [source, rawSource || null, referrer || null, referrerDomain || null, landing, utmMedium || null, utmCampaign || null, device]
+      `INSERT INTO visits (source, raw_source, referrer_domain, landing_page, utm_medium, utm_campaign, device, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
+      [source, rawSource || null, referrerDomain || null, landing, utmMedium || null, utmCampaign || null, device]
     );
     res.status(204).end();
   } catch (err) {
@@ -1220,6 +1229,11 @@ app.get('/api/qrcode', async (req, res) => {
     console.error('qrcode error:', err);
     res.status(500).json({ error: 'QR generation error' });
   }
+});
+
+// Configuration publique pour l'admin (ex : domaine canonique utilisé dans les QR codes).
+app.get('/api/config', (req, res) => {
+  res.json({ baseUrl: PUBLIC_BASE_URL });
 });
 
 // Admin route
